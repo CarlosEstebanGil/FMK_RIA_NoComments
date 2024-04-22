@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:ECanvas xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx"
+					xmlns:components="framework.components.*" 
+					width="698" 
+					height="152"
+					creationComplete="initMod(event)">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.managers.PopUpManager;
+			//atributos para db del comp compuesto:
+			[Bindable]
+			public var _hosturl:String=null; //20141211 no ip "localhost"; // igual en el replace gral sale andando, pero OJo creo q no haria Falta!.
+			[Bindable]
+			public var _isEmptyItem:Boolean=false;
+			[Bindable]
+			public var _idFieldName:String="";
+			[Bindable]
+			public var _valueFieldName:String="";
+			[Bindable]
+			public var _tableName:String="";
+			[Bindable]
+			public var _orderFieldName:String="";
+			[Bindable]
+			public var _orderType:String="";
+			[Bindable]
+			public var _sqlWhereFilter:String=null; //"";
+		
+			//Atribs xa conf Gral:
+			[Bindable]
+			public var title:String="Busqueda"; 
+			//Atribs xa conf cmb op 1:
+				
+			public var cmbOp1_hosturl:String=null; //20141211 no ip  "localhost"; // igual en el replace gral sale andando, pero OJo creo q no haria Falta!.
+			public var cmbOp1_isEmptyItem:Boolean=false;
+			public var cmbOp1_idFieldName:String="";
+			public var cmbOp1_valueFieldName:String="";
+			public var cmbOp1_tableName:String="";
+			public var cmbOp1_orderFieldName:String="";
+			public var cmbOp1_orderType:String="";
+			public var cmbOp1_sqlWhereFilter:String="";
+			
+			//Attribs xa conf cmb op 2:
+			public var cmbOp2_hosturl:String=null; //20141211 no ip  //"localhost"; // igual en el replace gral sale andando, pero OJo creo q no haria Falta!.
+			public var cmbOp2_isEmptyItem:Boolean=false;
+			public var cmbOp2_idFieldName:String="";
+			public var cmbOp2_valueFieldName:String="";
+			public var cmbOp2_tableName:String="";
+			public var cmbOp2_orderFieldName:String="";
+			public var cmbOp2_orderType:String="";
+			public var cmbOp2_sqlWhereFilter:String=null; 
+			
+			//Attribs xa conf rButtons:
+			[Bindable]
+			public var rbtCmb1_label:String="ComboBox Input Opcion1";
+			[Bindable]
+			public var rbtCmb2_label:String="ComboBox Input Opcion2";
+		 
+			
+			//Func handlers ( lo manejo asi y no x mensaje x ahora):
+			public var onSelection:Function=null;
+			
+			//Funcionamiento componente
+			
+			//Handlers checkboxes clicks: Setean los valores del combo xero no al combo sino a las vars a las q el cmb apunta(db)
+			public function handleRb1Click(event:Event):void{
+				try {
+					if (cmbComboMultiFacetico.dataProvider != null)  { // no se si hace falta
+						cmbComboMultiFacetico.dataProvider.removeAll();
+					}
+					
+					_hosturl=cmbOp1_hosturl;
+					_isEmptyItem=cmbOp1_isEmptyItem;
+					_idFieldName=cmbOp1_idFieldName;
+					_valueFieldName=cmbOp1_valueFieldName;
+					_tableName=cmbOp1_tableName;
+					_orderFieldName=cmbOp1_orderFieldName;
+					_orderType=cmbOp1_orderType;
+					_sqlWhereFilter=cmbOp1_sqlWhereFilter;
+					
+					cmbComboMultiFacetico.populate();
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+			public function handleRb2Click(event:Event):void{
+				try {
+					if (cmbComboMultiFacetico.dataProvider != null)  { // no se si hace falta
+						cmbComboMultiFacetico.dataProvider.removeAll();
+					}
+					
+					_hosturl=cmbOp2_hosturl;
+					_isEmptyItem=cmbOp2_isEmptyItem;
+					_idFieldName=cmbOp2_idFieldName;
+					_valueFieldName=cmbOp2_valueFieldName;
+					_tableName=cmbOp2_tableName;
+					_orderFieldName=cmbOp2_orderFieldName;
+					_orderType=cmbOp2_orderType;
+					_sqlWhereFilter=cmbOp2_sqlWhereFilter;
+					
+					cmbComboMultiFacetico.populate();
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+			public function initMod(event):void {
+				try {
+					cmbComboMultiFacetico.addEventListener(Event.CHANGE, cmbSelectionHandler); //20141128 //CLOSE, cmbSelectionHandler);
+					
+					rbtCmb1.selected=true;
+					// la meto en init xa q se invoque explict (sync). handleRb1Click(event);
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+			// ESTA FUNCION DEBE SER INVOCADA EXPLICITAMENTE XA ASEGURARME SYNC EN CREATIONS COMPLETE APP VS COMP 
+			public function init():void {
+				try {
+					handleRb1Click(null);
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+			public function cmbSelectionHandler(evt:Event):void {
+				try {
+					if (this.onSelection != null ) {
+						onSelection();					
+					}else {
+						showAlert("No existe definido ningún comportamiento para la selección"); //es temporal, xa nosotros.
+					}
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+			private var myAlert:Alert;
+			
+			public function showAlert(	text:String,  title:String=null, flags:uint=mx.controls.Alert.OK,  parent:Sprite=null,  
+													  clickListener:Function=null, iconClass:Class=null, defaultButton:uint=mx.controls.Alert.OK ): Alert { 
+				try {
+					myAlert=null;
+					myAlert = Alert.show(text,title,flags,parent,clickListener,iconClass,defaultButton); //'alert', 'Error - ');
+					PopUpManager.centerPopUp(myAlert);
+					myAlert.x = 350; 
+					myAlert.y = 200;
+					
+				} 
+				catch(error:Error)  {
+					throw new Error();
+				}finally {
+					return myAlert;
+				}
+			}
+			
+				public function getSelectedItem():Object {
+					var r:Object = null;
+					try {
+						r=this.cmbComboMultiFacetico.selectedItem;
+					} 
+					catch(error:Error)  {
+						throw new Error(error.message);
+					}
+					finally {
+						return r;
+					}
+				}
+					
+				public function getSelectedLabel():String {
+					var r:String = null;
+					try {
+						r=this.cmbComboMultiFacetico.selectedItem.label;
+					} 
+					catch(error:Error)  {
+						throw new Error(error.message);
+					} 
+					finally {
+						return r;
+					}
+				}
+					
+				public function getSelectedData():String {
+					var r:String = null;
+					try {
+						r=this.cmbComboMultiFacetico.selectedItem.data;
+					} 
+					catch(error:Error)  {
+						throw new Error(error.message);
+					} 
+					finally {
+						return r;
+					}
+				}	
+			 
+			/*//Dejo un par de funcs temporales xa acelerar la cosa:
+			public function setearPorOperacion():void {
+				try {
+					//cmbComboMultiFacetico.dataProvider.removeAll();
+					
+					cmbOp1_hosturl="localhost"; 
+					cmbOp1_isEmptyItem=false;
+					cmbOp1_idFieldName="numop"; 
+					cmbOp1_valueFieldName="numop";
+					cmbOp1_tableName="operaiadd";
+					cmbOp1_orderFieldName="numop";
+					cmbOp1_orderType="asc";
+					cmbOp1_sqlWhereFilter=null;
+					
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			
+			}
+			
+			public function setearPorDocTransporte():void {
+				try
+				{
+					//cmbComboMultiFacetico.dataProvider.removeAll();
+				
+					cmbOp2_hosturl="localhost"; 
+					cmbOp2_isEmptyItem=false;
+					cmbOp2_idFieldName="doccarga"; 
+					cmbOp2_valueFieldName="numop";
+					cmbOp2_tableName ="operaiadd";
+					cmbOp2_orderFieldName ="doccarga";
+					cmbOp2_orderType ="asc";
+					cmbOp2_sqlWhereFilter=null;
+					
+				} 
+				catch(error:Error) 
+				{
+					throw new Error(error.message);
+				}
+			
+			}*/
+			//Dejo un par de funcs temporales xa acelerar la cosa:
+			public function setearPorOperacion():void {
+				try {
+					//cmbComboMultiFacetico.dataProvider.removeAll();
+					
+					cmbOp1_hosturl=null; //20141211 no ip "localhost"; 
+					cmbOp1_isEmptyItem=false;
+					cmbOp1_idFieldName="numop"; 
+					cmbOp1_valueFieldName="numop";
+					cmbOp1_tableName="view_prorrateo_op";
+					cmbOp1_orderFieldName="numop";
+					cmbOp1_orderType="asc";
+					cmbOp1_sqlWhereFilter=" numop <> '' "; //=null;
+					
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+				
+			}
+			
+			public function setearPorDocTransporte():void {
+				try
+				{
+					//cmbComboMultiFacetico.dataProvider.removeAll();
+					
+					cmbOp2_hosturl=null; //20141211 no ip //"localhost"; 
+					cmbOp2_isEmptyItem=false;
+					cmbOp2_idFieldName="doccarga"; 
+					cmbOp2_valueFieldName="numop";
+					cmbOp2_tableName ="view_prorrateo_op";
+					cmbOp2_orderFieldName ="doccarga";
+					cmbOp2_orderType ="asc";
+					cmbOp2_sqlWhereFilter="  tipdes <> 'DJAI' AND doccarga <> '' "; //null;
+					
+				} 
+				catch(error:Error) 
+				{
+					throw new Error(error.message);
+				}
+				
+			}
+
+			
+			
+			//TODO : Robuestes.. Log.. encapsulamiento.. etc
+			
+			/*
+				Forma de uso:
+								Una screen lo incorpora. 
+								le setea el titulo al componente mediante la var : title
+								setea al componente una funcion xa el action: onSelection
+								setea cada valor de combo (table, where, valueField, etc) xa el cmb1
+								setea cada valor de combo (table, where, valueField, etc) xa el cmb2
+								Y LE EJECUTA EL METODO INIT() EN SU INITMOD de la screen q lo usa (sync) y LISTO. 
+								en teoria el componente se encarga luego de todo:
+								1- escucha x el close del cmb y ejecuta el func ptr asociado
+								2- dicho func ptr puede valerse de los getters xa obtener el item/label o data
+									del valor elegido en el combo y usarlos a gusto xa seguir su curso de ejecución.
+			
+								Opcional. En vez de setear los valores 1 a 1 , el cmb tiene unos setters helpers
+								xa cargar combo por operacion y otro xa cargar por doc de transporte! , ent:
+								en mainscree.initMod() { scmbObj.setear funcPtr +
+														 scmbObj.setearTransporte (setea vars datacmb1 xa luego hndlersRb las usen xa 
+																					asignar a como data fija a las bindables q toma el cmb) + 
+														 scmbObj.Op.. (datacmb2)+
+														 scmbObj.init() -> ejecuta el hnlerRb1 = 
+																				setea vars bindables alos valores d las d cmbOp1
+																				populate con el de "x op"..
+			*/
+		]]>
+	</fx:Script>
+	<components:EFieldSet id="cont_busqueda" width="561" height="88"
+						  cornerRadius="5" gap="2" legend="{title}" paddingLeft="1" paddingRight="1">
+		
+		<components:ERadioButton id="rbtCmb1" x="66" y="14" width="199"
+								 label="{rbtCmb1_label}" groupName="grpBusqueda" click="handleRb1Click(event);"/>
+		
+		<components:ERadioButton id="rbtCmb2" x="400" y="14" width="136"
+								 label="{rbtCmb2_label}" groupName="grpBusqueda" click="handleRb2Click(event);"/>
+		
+		<components:EComboBox id="cmbComboMultiFacetico" x="66" y="40" width="429" height="27" 
+							  isEmptyItem="{this._isEmptyItem}"
+							  hostURL="{this._hosturl}"
+							  idFieldName="{this._idFieldName}"
+							  valueFieldName="{this._valueFieldName}"
+							  tableName="{this._tableName}"
+							  sqlWhereFilter="{this._sqlWhereFilter}"
+							  orderFieldName="{this._orderFieldName}"
+							  orderType="{this._orderType}"
+							  
+							  />
+		 		
+	</components:EFieldSet>
+</components:ECanvas>

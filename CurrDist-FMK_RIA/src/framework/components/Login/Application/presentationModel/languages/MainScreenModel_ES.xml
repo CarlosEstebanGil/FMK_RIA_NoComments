@@ -1,0 +1,8 @@
+<root>
+<qry>
+	<item name="lblUserName" 	value="Usuario: "	/>
+	<item name="lblUserPass" 	value="Contraseña: "/>
+	<item name="lblcmbLanguage" value="Idioma: "	/>
+	<item name="legendFieldSet"	value="Ingreso al Sistema VOTS Plus: "/>
+</qry>
+</root>

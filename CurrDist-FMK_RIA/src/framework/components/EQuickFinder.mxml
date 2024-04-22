@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<s:ComboBox xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			xmlns:s="library://ns.adobe.com/flex/spark" 
+			xmlns:mx="library://ns.adobe.com/flex/mx"
+			implements="framework.components.IAbstractListBaseAutoSvcPopulable,framework.components.IEComponent"
+			preinitialize="onInitialize_handler(event)"
+			skinClass="framework.components.NonArrowedComboBox"
+			>
+	
+	<fx:Script>
+		<![CDATA[
+			import framework.Logger;
+			import framework.components.events.EAutoPopulableListCompEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.IList;
+			import mx.logging.ILogger;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.http.HTTPService;
+			import mx.skins.spark.EditableComboBoxSkin;
+			
+			import spark.events.TextOperationEvent;
+			
+			private static const LOG:ILogger = Logger.getLogger(EQuickFinder); 
+			
+			private var unfilteredDataProvider : IList;
+			
+			override public function set dataProvider(value:IList):void {
+				super.dataProvider = value;
+				
+				unfilteredDataProvider = value;
+			}
+			
+			override protected function textInput_changeHandler(
+				event:TextOperationEvent):void {
+				super.textInput_changeHandler(event);
+				
+				if (unfilteredDataProvider is ArrayCollection) {
+					ArrayCollection(unfilteredDataProvider).filterFunction = filterMatches;
+					ArrayCollection(unfilteredDataProvider).refresh();
+					
+					super.dataProvider = new ArrayCollection(unfilteredDataProvider.toArray()); 
+				}
+			}
+			
+			protected function filterMatches(item:Object):Boolean {
+				if (item is String) {
+					if(String(item).toLowerCase().indexOf(
+						textInput.text.slice(0,
+							textInput.selectionAnchorPosition).toLowerCase())>-1)
+						return true;
+				}
+				else if (labelField && labelField!= "") {
+					if(item.hasOwnProperty(labelField) && 
+						String(item[labelField]).toLowerCase().indexOf(
+							textInput.text.slice(0,
+								textInput.selectionAnchorPosition).toLowerCase())>-1)
+						return true;
+				}
+				
+				return false;
+			}
+			
+			public function on_initialize():void {
+				//EditableComboBoxSkin = true;
+				
+				setStyle("arrowButtonWidth",0);
+				setStyle("fontWeight","normal");
+				setStyle("cornerRadius",0);
+				setStyle("paddingLeft",0);
+				setStyle("paddingRight",0);
+
+			} 
+			//fin:Quick Finder Code :  ------------------------------------------------------------------------------
+
+
+			//com:AutoPopulable Code : ------------------------------------------------------------------------------
+			
+			public static const NO_SELECTION_VALUE:String = "-- Seleccionar --";
+			public static const NO_SELECTION_LABEL:String = "-- Seleccionar --";
+			
+			//20140812
+			private var _noSelectionLabel:String=NO_SELECTION_LABEL;
+			private var _noSelectionValue:String=NO_SELECTION_VALUE;
+			
+			//20140827
+			private var _sqlWhereFilter:String=null;
+			
+			
+			/*
+			public override function get noSelectionValue():String {
+				return _noSelectionValue;
+			}
+			
+			public override function set noSelectionValue(value:String):void {
+				_noSelectionValue = value;
+			}
+			
+			public override function get noSelectionLabel():String {
+				return _noSelectionLabel;
+			}
+			
+			public override function set noSelectionLabel(value:String):void {
+				_noSelectionLabel = value;
+			}
+			*/
+			public  function get noSelectionValue():String {
+				return  this.genericImpl.noSelectionValue;
+			}
+			
+			public  function set noSelectionValue(value:String):void {
+				//_noSelectionValue = value;
+				this.genericImpl.noSelectionValue=value;
+			}
+			
+			public  function get noSelectionLabel():String {
+				//return _noSelectionLabel;
+				return this.genericImpl.noSelectionLabel;
+			}
+			
+			public  function set noSelectionLabel(value:String):void {
+				this.genericImpl.noSelectionLabel = value;
+			}
+			
+			private var _genericImpl:AbstractGenericServicePopulableListComponent;
+			
+			private var _data:ArrayCollection; //= new ArrayCollection();	
+			
+			private var _autoComplete:Boolean=false;	
+			
+			private var _svcURL:String=null; //set this prop if u don't want to override getUrl function by extending in new child class
+			
+			private var _reqProtocol:String="http"; //20141105 "HTTP"; //private var request method? post/get.. 
+			private var _hostURL:String=null; //"localhost"; <- 20141002
+			private var _portNumber:String=null; //"8080"; <- 20141002
+			
+			private var _appContextURL:String="FMK-DynamicWEB";
+			private var _appName:String="FMK-DynamicWEB/ServiceLocator"; //?svc=genericCMBProviderService"; 
+			private var _svcName:String= "getDataFromTableForCombo"; //"genericCMBProviderService"; 
+			
+			//TODO: Ver si las props de un custom comp pueden setearse como required,xa las q si o si tengan q estar,asi no hay lugar a errores..
+			
+			private var _tableName:String=null;
+			private var _idFieldName:String=null;
+			private var _valueFieldName:String=null;
+			private var _orderFieldName:String=null;
+			private var _orderType:String=null;
+			
+			
+			private var _onDataLoaded:Function=null;
+			private var _onDataNOTLoaded:Function=null;
+			
+			private var _httpsvcGetCompData:HTTPService=null;
+			
+			private var _isEmptyItem:Boolean=true;
+			
+			//--2) methods: ( interfase implementation wrapping the impl to "abstract" class (generic implementation)) --------------
+			
+			//<<i>> wrappers: 
+			// -------------
+			
+			public function getUrl():String { //calls impl of get url standard -> OVERRIDE if Needed.
+				var strTmp:String = null; 
+				try {
+					strTmp = this.genericImpl.getUrl();
+				} 
+				catch(error:Error) {
+					Logger.logError(LOG, error);
+					throw new Error (error.message);
+				}
+				finally {
+					//_svcURL=strTmp;
+					return strTmp;
+				}
+				
+			}
+			
+			public function populate(svcUrlParam:String=null):void{
+				try {
+					genericImpl.populate(svcUrlParam);
+				} 
+				catch(error:Error) {
+					Logger.logError(LOG, error);
+					throw new Error (error.message); 
+				}
+				finally {
+					
+				}
+			}
+			
+			public function httpOnResultHandler(resultEvent:Object):void {  // ResultEvent):void {
+				//se carga. + lanza msge "cargadoOk" xa el modulo usuario
+				try {
+					genericImpl.httpOnResultHandler(resultEvent);
+				} 
+				catch(error:Error){
+					Logger.logError(LOG, error);
+					//dispatchEvent(new EAutoPopulableListCompEvent(EAutoPopulableListCompEvent.DATA_LOADED_ERROR)); 
+					//throw new Error (error.message); 
+				}
+			}
+			
+			public function addEmptyItemOption(arr:ArrayCollection):void { //asumo (ver bn) q el obj pasa por referencia (modificable)
+				try {
+					genericImpl.addEmptyItemOption(arr);
+				} 
+				catch(error:Error)  {
+					Logger.logError(LOG, error);
+					throw new Error(error.message);
+				}
+			}
+			
+			public function httpOnFaultHandler(faultEvent:FaultEvent):void {
+				try {
+					genericImpl.httpOnFaultHandler(faultEvent);
+				} 
+				catch(error:Error)  {
+					Logger.logError(LOG, error);
+					throw new Error(error.message);
+				}
+			}
+			
+			[Bindable (event="change")] //-> acá SI hace falta, va en el comp posta.) //actualiza a sus observers (comps q la tienen como bindeada en su "value") ..
+			public function isValueSelected():Boolean { //private function setValueSelected():void { //Boolean
+				var r:Boolean=false;
+				try { 
+					r= genericImpl.isValueSelected();
+				}	
+				catch(error:Error) {
+					trace(error.message);
+				}finally {
+					return r; //this._valueSelected=r; //return r;
+				}	
+			}
+			
+			public function autoPopulate(event:Event):void {
+				try{
+					genericImpl.autoPopulate(event);
+				}
+				catch(err:Error) {
+					trace(err.message);
+				}
+			}
+			
+			public function setLabel( labelWanted:String, caseSensitive:Boolean=false ):Boolean {
+				var r:Boolean=false;
+				try {
+					r = genericImpl.setLabel(labelWanted,caseSensitive);
+				}catch(error:Error) {
+					trace(error.message);
+				}finally {
+					return r; //this._valueSelected=r; //return r;
+				}	
+			} 
+			
+			public function setValue( valueWanted:String, caseSensitive:Boolean=false ):Boolean {
+				var r:Boolean=false;
+				try {
+					r=genericImpl.setValue(valueWanted,caseSensitive);
+				}catch(error:Error) {
+					trace(error.message);
+				}finally {
+					return r; //this._valueSelected=r; //return r;
+				}	
+			} 
+			
+			public function createHTTPService():void {
+				try {	
+					//this.caller.httpsvcGetCompData = new HTTPService(); // this.svcGetCompData = new HTTPService();
+					this.genericImpl.createHTTPService();
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}	
+			}
+			
+			public function configureHTTPService():void {
+				try {
+					this.genericImpl.configureHTTPService();
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}	
+			}
+			
+			public function createDataArrayCollection():ArrayCollection {
+				var r:ArrayCollection=null;
+				try {
+					r = genericImpl.createDataArrayCollection(); //new ArrayCollection();
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+				finally{
+					return r;
+				}	
+			}
+			
+			public function onInitialize_handler(e:Event):void {
+				try {
+					//super();
+					
+					this.genericImpl=new AbstractGenericServicePopulableListComponent(this); //!!! si o si Guacho !!!
+					//20140821 Esta linea es nuva xa la sync !
+					this.genericImpl.addEventListener(EAutoPopulableListCompEvent.DATA_LOADED_OK,genericImplDataLoadedOkEvt_handler);
+					createHTTPService();	
+					configureHTTPService();		
+					this.data = createDataArrayCollection(); 
+					
+					addEmptyItemOption(this.data);					
+					
+					this.dataProvider=data; 
+					
+					this.selectedIndex=0;
+					
+					this.addEventListener(MouseEvent.CLICK, autoPopulate); 
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			public function genericImplDataLoadedOkEvt_handler(event:Event):void{
+				dispatchEvent(event); //lo relanzo!.
+			}
+			
+			
+			
+			//--3) getters & setters: (posta, no wrappers) -----------------------------------------------------------------------------------------
+			public function get genericImpl():AbstractGenericServicePopulableListComponent { //estos deberian ir en la <<i>> ?? 00 .. evaluarlo..
+				return _genericImpl;
+			}
+			
+			public function set genericImpl(value:AbstractGenericServicePopulableListComponent):void {
+				_genericImpl = value;
+			}
+			
+			public function get svcURL():String {
+				return _svcURL;
+			}
+			
+			public function set svcURL(value:String):void {
+				_svcURL = value;
+			}
+			
+			
+			public function get valueFieldName():String {
+				return _valueFieldName;
+			}
+			
+			public function set valueFieldName(value:String):void {
+				_valueFieldName = value;
+			}
+			
+			public function get idFieldName():String {
+				return _idFieldName;
+			}
+			
+			public function set idFieldName(value:String):void {
+				_idFieldName = value;
+			}
+			
+			public function get tableName():String {
+				return _tableName;
+			}
+			
+			public function set tableName(value:String):void {
+				_tableName = value;
+			}
+			
+			public function get svcName():String {
+				return _svcName;
+			}
+			
+			public function set svcName(value:String):void {
+				_svcName = value;
+			}
+			
+			public function get appName():String {
+				return _appName;
+			}
+			
+			public function set appName(value:String):void {
+				_appName = value;
+			}
+			
+			public function get appContextURL():String {
+				return _appContextURL;
+			}
+			
+			public function set appContextURL(value:String):void {
+				_appContextURL = value;
+			}
+			
+			public function get portNumber():String {
+				return _portNumber;
+			}
+			
+			public function set portNumber(value:String):void {
+				_portNumber = value;
+			}
+			
+			public function get hostURL():String {
+				return _hostURL;
+			}
+			
+			public function set hostURL(value:String):void {
+				_hostURL = value;
+			}
+			
+			public function get reqProtocol():String {
+				return _reqProtocol;
+			}
+			
+			public function set reqProtocol(value:String):void {
+				_reqProtocol = value;
+			}
+			
+			public function get onDataNOTLoaded():Function {
+				return _onDataNOTLoaded;
+			}
+			
+			public function set onDataNOTLoaded(value:Function):void {
+				_onDataNOTLoaded = value;
+			}
+			
+			public function get onDataLoaded():Function {
+				return _onDataLoaded;
+			}
+			
+			public function set onDataLoaded(value:Function):void {
+				_onDataLoaded = value;
+			}
+			
+			[Bindable]
+			public function get orderType():String {
+				return _orderType;
+			}
+			[Inspectable (defaultValue="asc", enumeration="asc,desc")]
+			public function set orderType(value:String):void {
+				_orderType = value;
+			}
+			
+			public function get orderFieldName():String {
+				return _orderFieldName;
+			}
+			
+			public function set orderFieldName(value:String):void {
+				_orderFieldName = value;
+			}
+			
+			[Bindable]
+			public function get autoComplete():Boolean {
+				return _autoComplete;
+			}
+			
+			[Inspectable (defaultValue="false", enumeration="true,false")]
+			public function set autoComplete(value:Boolean):void {
+				_autoComplete = value;
+			}
+			
+			[Bindable]
+			public function get data():ArrayCollection {
+				return _data;
+			}
+			
+			public function set data(value:ArrayCollection):void {
+				_data = value;
+			}
+			
+			public function get httpsvcGetCompData():HTTPService {
+				return _httpsvcGetCompData;
+			}
+			
+			public function set httpsvcGetCompData(value:HTTPService):void {
+				_httpsvcGetCompData = value;
+			}
+			//20140827
+			public function get sqlWhereFilter():String {
+				return _sqlWhereFilter;
+			}
+			
+			[Inspectable]
+			public function set sqlWhereFilter(value:String):void {
+				this._sqlWhereFilter = value;	
+			}
+			public function get isEmptyItem():Boolean  {
+				return _isEmptyItem;
+			} 
+			
+			public function set isEmptyItem(value:Boolean):void  {
+				_isEmptyItem = value;
+			} 
+			
+			//fin:AutoPopulable Code : ------------------------------------------------------------------------------
+			
+			//20140922
+			
+			//import mx.collections.ArrayCollection;
+			//sep x comas, xa q pueda setearse en modo diseño.. //ArrayCollection=new ArrayCollection;
+			
+			private var _compPermsArrCollStr:String="";
+			
+			public function get compPermsArrCollStr():String {
+				return _compPermsArrCollStr;
+			}
+			[Inspectable]
+			public function set compPermsArrCollStr(strPermsDelimitedByCommasParam:String):void {
+				this._compPermsArrCollStr=strPermsDelimitedByCommasParam;
+			}
+			
+			//x ahora solo va a tener un solo perm, luego, hacer una func q me splitee x commas, me diga cuantos hay, me dé cada uno. etc
+			//y contemplar eso en la func recursiva en EPanel (la q controla los permisos en si)!! (x ahora como es 1 solo lo tomo y listo)
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+	</fx:Declarations>
+	</s:ComboBox>

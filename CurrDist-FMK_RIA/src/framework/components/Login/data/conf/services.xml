@@ -1,0 +1,24 @@
+<root>
+	<reset>http://localhost/COPC_Svr/reset.jsp</reset>
+	<resetApp>http://localhost/COPC_Svr/resetApp.jsp</resetApp>
+	
+	<getParams>http://localhost/COPC_Svr/getParams.jsp</getParams>
+
+	<tareas>data/config_tareas.xml</tareas>
+	<dataSources>data/data_sources.xml</dataSources>
+
+	<userDataSources>http://localhost/COPC_Svr/wc.jsp</userDataSources>
+
+	<configConsulta>http://localhost/COPC_Svr/wc.jsp</configConsulta>
+	<XconfigConsulta>data/config_consulta.xml</XconfigConsulta>
+
+	<qrylist>http://localhost/COPC_Svr/wc.jsp</qrylist>
+	<Xqrylist>data/qrylist.xml</Xqrylist>
+
+	<consultaXML>http://localhost/COPC_Svr/wc.jsp</consultaXML>
+
+	<generico>http://localhost/COPC_Svr/wc.jsp</generico>
+	
+	<dominios>data/dominios.xml</dominios>
+	<login>http://localhost/ControlDeAcceso/loginXML.jsp</login>
+</root>

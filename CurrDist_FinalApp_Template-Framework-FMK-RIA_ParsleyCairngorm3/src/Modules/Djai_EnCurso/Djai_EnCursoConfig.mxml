@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<parsley:Objects xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				 xmlns:s="library://ns.adobe.com/flex/spark" 
+				 xmlns:mx="library://ns.adobe.com/flex/mx" 
+				 xmlns:parsley="http://www.spicefactory.org/parsley"
+				 xmlns:Application="Application.*" 
+				 xmlns:local="*" 
+				 xmlns:domain="Modules.Djai_EnCurso.Application.domain.*" 
+				 xmlns:presentationModel="Modules.Djai_EnCurso.Application.presentationModel.*" xmlns:domain1="Modules.Djai_EnCursoModel.Application.domain.*" >
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+		<domain:Djai_EnCursoModel/>
+		<presentationModel:MainScreenModel/>
+
+			
+		<parsley:DynamicObject type="{EService}" id="Djai_EnCursoSvc" />
+		<parsley:DynamicObject type="{EService}" id="svcDownloadExcel" />  
+		
+		<!-- parsley:DynamicObject type="{Djai_EnCursoService}" id="Djai_EnCursoSvc" --> 
+		<!-- PRUEBA_MESSAGE}" -->
+		
+		<parsley:MapCommand type="{Djai_EnCursoCommand}" selector="{Messages.DJAI_ENCURSO_CONSULTA_MESSAGE}" /> 
+		<parsley:MapCommand type="{Djai_EnCursoCommand}" selector="{Messages.DJAI_ENCURSO_ALTA_MESSAGE}" /> 
+		<parsley:MapCommand type="{Djai_EnCursoCommand}" selector="{Messages.DJAI_ENCURSO_DELETE_MESSAGE}" /> 
+		<parsley:MapCommand type="{Djai_EnCursoCommand}" selector="{Messages.DJAI_ENCURSO_MODIF_MESSAGE}" />
+		
+		<parsley:MapCommand type="{EspecificFileDownloadCommand1}" selector="{Messages.DOWNLOAD_EXCEL}" />
+
+
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import Modules.Djai_EnCurso.Application.bussiness.commands.Djai_EnCursoCommand;
+			import Modules.Djai_EnCurso.Application.bussiness.commands.EspecificFileDownloadCommand1;
+			import Modules.Djai_EnCurso.data.conf.Messages;
+			
+			import framework.EService;
+		]]>
+	</fx:Script>
+</parsley:Objects>

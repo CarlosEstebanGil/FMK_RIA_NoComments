@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<parsley:Objects xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 xmlns:parsley="http://www.spicefactory.org/parsley"
+		 xmlns:Application="Application.*" 
+		 xmlns:local="*" 
+		 xmlns:domain="application.domain.*" 
+		 xmlns:presentationModel="application.presentationModel.*" 
+		 xmlns:logindomain="Modules.Login.Application.domain.*" 
+		 xmlns:loginpresentationModel="Modules.Login.Application.presentationModel.*"
+		>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		 <domain:GlobalModel id="GlobalModel"/>
+		
+		<presentationModel:InputModel/>
+		<presentationModel:OutputModel/>
+		
+ 
+		 
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+		
+			import application.bussiness.commands.*;
+			import application.bussiness.services.*;
+			import application.messages.*;
+			
+			import framework.EService;
+		]]>
+	</fx:Script>
+
+</parsley:Objects>

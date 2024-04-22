@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:DateField xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			  xmlns:s="library://ns.adobe.com/flex/spark" 
+			  xmlns:mx="library://ns.adobe.com/flex/mx" 
+			  creationComplete="initComp()"
+			  implements="framework.components.IEComponent">
+
+	<fx:Script>
+		<![CDATA[
+			import framework.FmkAppConf;
+			import framework.Fmk_Constants;
+			
+			import mx.events.FlexEvent;
+			import mx.formatters.DateFormatter;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+
+			/*public static const DEFAULT_DATE_FORMAT:String="DD MM YYYYY";
+			public static const DEFAULT_TIME_FORMAT:String="DD MM YYYYY";*/
+			public static const DEFAULT_DATETIME_FORMAT:String= 'YYYY-MM-DD HH:NN:SS'; //'DD-MM-YYYY HH:NN:SS'; //.Q';
+			
+			private var dateFormatter:DateFormatter;
+			
+			private var _useServerDate:Boolean=true;
+			
+			private var _language:String="ES";
+			
+			//handlers customizables mediante setters, y con default implementations.
+
+			private var _svcAction:Function=action; //default implementation
+			private var _svcFault:Function=fault;  //default implementation
+
+			public function get svcFault():Function {
+				return _svcFault;
+			}
+			
+			public function set svcFault(value:Function):void {
+				_svcFault = value;
+			}
+			
+			public function get svcAction():Function {
+				return _svcAction;
+			}
+			
+			public function set svcAction(value:Function):void {
+				_svcAction = value;
+			}
+			
+			[Bindable]
+			public function get language():String {
+				return _language;
+			}
+			[Inspectable (defaultValue="ES", enumeration="'ES','EN'")]
+			public function set language(value:String):void {
+				_language = value;
+			}
+			
+			[Bindable]
+			public function get useServerDate():Boolean {
+				return _useServerDate;
+			}
+			[Inspectable (defaultValue="true", enumeration="true,false")]
+			public function set useServerDate(value:Boolean):void {
+				_useServerDate = value;
+			}
+			
+			//getCurrentDateAndHour
+			public function initComp():void{
+				try {
+					this.formatString= "DD/MM/YYYY"; //"DD-MM-YYYY";
+					
+					setLanguageNames();				//SE INICIALIZA selectedDate con currentDate pero el usuario puede 
+					//despues setearle .selectedDate con lo que él quiera. 
+					
+					initFormater();
+					
+					setCurrentDate(useServerDate); //default = true. sino lo pueden setear como prop incluso en el mxml!!!
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+			private function initFormater():void{
+				dateFormatter = new DateFormatter();
+				dateFormatter.formatString = DEFAULT_DATETIME_FORMAT; //'DD-MM-YYYY HH:NN:SS'
+			}
+			
+			public function setLanguageNames():void {
+				try {
+					switch(language) {
+						case "ES": {
+							this.dayNames=DAY_NAMES_ES;
+							this.monthNames=MONTH_NAMES_ES;
+							break;
+						}
+						case "EN": {
+							this.dayNames=DAY_NAMES_EN;
+							this.monthNames=MONTH_NAMES_EN;
+							break;
+						}
+						default: {
+							this.dayNames=DAY_NAMES_ES;
+							this.monthNames=MONTH_NAMES_ES;
+							break;
+						}
+					}
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+			public function setCurrentDate(remote:Boolean=true):void {  
+				try {
+					if (remote) { 
+						getDateFromServer.send();
+					}
+					else {
+						this.selectedDate = getLocalDateFormatted(); 
+					}
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+			
+			public function getLocalDateFormatted():Date {
+				var r:Date=null;
+				try {
+					r = new Date();
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}finally {
+					return r;
+				}
+			}
+			
+			
+			//-----
+			private var _server_curr_hour_only:String=null;
+			private var _server_curr_date_only:String=null;
+			public function get server_curr_date_only():String {
+				return _server_curr_date_only;
+			}
+			
+			public function set server_curr_date_only(value:String):void {
+				_server_curr_date_only = value;
+			}
+			
+			public function get server_curr_hour_only():String {
+				return _server_curr_hour_only;
+			}
+			
+			public function set server_curr_hour_only(value:String):void {
+				_server_curr_hour_only = value;
+			}
+			//-----
+			
+			
+			public function action(resultEvent:ResultEvent):void { //si usan otro xml q sobreEscriban el action y listo.
+				try {
+					//"06 08 2014"
+					this.selectedDate = string_To_Date(getDateFromServer.lastResult.root.qry.item.fechahora); //stringToDate(getDateFromServer.lastResult.root.qry.item.fecha, "DD MM YYYYY");
+					this.server_curr_hour_only=getDateFromServer.lastResult.root.qry.item.hora;
+					this.server_curr_date_only=getDateFromServer.lastResult.root.qry.item.fecha; 
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+			public function fault(faultEvent:FaultEvent):void {
+				try {
+					throw new Error("error"); //todo : disptach a message ... !!!!!!!!!!!!!!!!!!!
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+			public function date_To_String(d:Date):String {
+				var r:String =null;
+				try {
+					if (d != null) 
+						r = dateFormatter.format(d);
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);	
+				}finally { 
+					return r;
+				}
+			}
+			
+			//NOOOOOOO!! NO SE PODIA HACER ESTOO..
+			//Recibe  [un date] (o usa el selectedDate si no recibe uno) y [una hora] ( o usa la actual del servidor) y devuelve la concatenación osea un str timeStamp 
+			//con el formato implementado especialmente para el framework servidor.
+			
+			//!!! 
+			//SIII ..ESTO SI!! -> : NEW : No puedo contemplar acá dentro ir a buscar la fecha al sever.. lo único que pueden hacer xa usar la fecha del server
+			//getDateFromServer y definir un action customizado que haga lo mismo que el otro action (actualizar los atrib fecha/hora y ts
+			//pero q además contenga código para invocar a esta función con esa hora ya actualizada y con el resultado de eso se lo guardan
+			//en una variable ponele de su propia instancia de EDateField (una var q ellos crean en su extensión de este mxml ) 
+			// o hacen lo que quieran hacer.. 
+			public function getFormattedTimeStamp(dateParam:Date=null ,zeroHour:Boolean=true,hourParam:String=null,  localHour:Boolean=false):String{
+				var r:String=null;
+				try
+				{
+					var dateToUse:Date=dateParam; //decide si usa el param o sino la seleccionada 
+					if (dateToUse==null)
+						dateToUse=this.selectedDate; //deberia ya estar seteado c/el currdate del server!. ó cambiado!(elegido explicit) x el user
+					
+					if (dateToUse!=null)  { //tiene fecha válida (controlo x q x ahí ni volvió aún del server o fallo y el user no seleccionó nada
+						var hourToUse:String=hourParam;
+						if (hourToUse !=null) { //si pasan una hora ent usa esa (la idea es q la tienen q pasar, sino es xq no les importa) .. 
+							/*
+							var strHour:String="";							
+ 							if (serverHour){
+								getDateFromServer.result=armar
+								getDateFromServer.send();
+							}else { //local hour  
+ 								var date:Date=new Date();
+								strHour= date.hours.toString()+":"+date.minutes.toString()+":"+date.seconds.toString();
+								r= string_To_Date(dateToUse) + " " + strHour; */	
+							r= getDateAsString(dateToUse) + " " + hourToUse;  //20140910 taba mal string_To_Date(dateToUse) + " " + hourToUse; 
+						}else{ //hourParam es null (xero si localHour es explícitamente indicada como true) ent quiere la hora local..
+							if (localHour) {
+							var strHour:String="";
+							var date:Date=new Date();
+							strHour= date.hours.toString()+":"+date.minutes.toString()+":"+date.seconds.toString();
+							r= getDateAsString(dateToUse) + " " + strHour;  //string_To_Date(dateToUse) + " " + strHour; 
+							}else { //hourParam es null y no quieren local hour ent no sirve 
+								//EN ESTE CASO TIENEN Q HACER COMO INDICO AL PPIO DE LA CLASE EN EL CASO (b) osea
+								//registrarse en el evento SERVER_DATETIME_UPDATED, invocar updateServerDatetimeResultHandler()
+								//y en su handler invocar recien a esta funcion con el hourParam = get server_curr_hour_only !!!!!!!!
+								if (zeroHour) { //explicitamente indicaron x param q quieren un ts pero que no importa la hora 
+									r= getDateAsString(dateToUse) + " " + "00:00:00"; //string_To_Date(dateToUse) + " " + "00:00:00"; 
+								}
+							}
+						}
+					}
+					
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}finally {
+					return r;
+				}
+			}	
+			
+			
+			public function getDateAsString(dateParam:Date):String { //getSelectedDateAsString(dateParam:Date):String {
+				var r:String=null;
+				try {
+					//r= selectedDate.hours.toString()+":"+selectedDate.minutes.toString()+":"+selectedDate.seconds.toString();
+					//r= selectedDate.day.toString()+"-"+selectedDate.month.toString()+"-"+selectedDate.fullYear.toString();	
+					dateFormatter.formatString= 'YYYY-MM-DD'; //'DD-MM-YYYY';
+					r= dateFormatter.format(dateParam); // dateParam.f.toString()+"-"+dateParam.month.toString()+"-"+dateParam.fullYear.toString();
+					dateFormatter.formatString=DEFAULT_DATETIME_FORMAT;// Reestablezco: 'DD-MM-YYYY HH:NN:SS'
+					//DD-MM-YYYY HH:NN:SS
+				} 
+				catch(error:Error) {
+					throw new Error(error.message);
+				}finally {
+					return r;
+				}	
+			}
+			
+			public function updateCurrDateTimeFromServer():void {
+				try {
+					//20140910 no funca getDateFromServer.result=updateServerDatetimeResultHandler;
+					getDateFromServer.send();
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+			public static const SERVER_DATETIME_UPDATED:String="SERVER_DATETIME_UPDATED";
+			
+			
+			//Final: MODO de Uso: Tienen q registrarse en el evento SERVER_DATETIME_UPDATED y ejecutar esta func
+			//ent en su func handler ya disponen con los getters de server_curr_date_only y server_curr_hour_only de la data posta
+			//Obs: este nuevo handler es xa q no actualize el seletedDate como lo hace el otro.. 
+			private function updateServerDatetimeResultHandler():void {
+				try {
+					this.server_curr_hour_only=getDateFromServer.lastResult.root.qry.item.hora;
+					this.server_curr_date_only=getDateFromServer.lastResult.root.qry.item.fecha; 
+					dispatchEvent( new FlexEvent(SERVER_DATETIME_UPDATED) ); // <- tienen q escuchar x este evento
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			} 
+				
+			//wrapper (ya existía), aunque éste automatiza y forza el formato a "DD-MM-YYYY"
+			public function string_To_Date(s:String):Date {
+				var r:Date;
+				try {
+					r=DateField.stringToDate(s,"YYYY-MM-DD"); //"DD-MM-YYYY");			
+					//r= DateFormatter.parseDateString(s);
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);	
+				}finally {
+					return r; 
+				}
+			}
+			
+			//-- vars configurables xa armado customizado de la url del servicio q provee la hora. ( c/customizacion x default x partes!). 
+			private var _reqProtocol:String="http"; //"HTTP";  
+			private var _hostURL:String=null; // "localhost"; <- 20141002
+			private var _portNumber:String=null; //"8080"; <- 20141002
+			private var _appName:String="FMK-DynamicWEB/ServiceLocator";  
+			private var _svcName:String= "getCurrentDateAndHour&server=" + _hostURL+ "&port=" + _portNumber ; //svcName incluy los params del svc
+			
+			//private var boolSync:Boolean=false;
+			
+			//inicializo en null xa q tome todo x default, si explícitamente la setean a algo, ent se usa ese algo.
+			private var _svcUrl:String=null; //"http://localhost:8080/FMK-DynamicWEB/ServiceLocator?svc=getCurrentDateAndHour&server=localhost&port=8080"; //20141105 iba null pero le pongo la url xa q ande x ahora null;  //Fmk_Constants.SVC_GET_CURRDATE_URL;
+			
+			public function get svcUrl():String {
+				return _svcUrl;
+			}
+			
+			public function set svcUrl(value:String):void {
+				_svcUrl = value;
+			}
+			
+			public function getUrl():String { //get url standard -> OVERRIDE if Needed.
+				var strTmp:String = null; 
+				try {
+					if (svcUrl == null) { //TODO: -> Esta url default de svc xa obt cmbs deberia estar en un arch de conf del fmk ..?
+						//20141002 -> strTmp = reqProtocol + "://"  + hostURL + ":" + portNumber + "/" + appName + "?" + "svc=" + svcName
+						strTmp = reqProtocol + "://"  + getPreferredHost() + ":" + getPreferredPort() + "/" + appName + "?" + "svc=" + svcName;
+					}else { // this.svcUrl not setted by user explicitly ( svcUrl prop = null ) then default format using the other params..
+						strTmp = svcUrl; //uso la svcUrl seteada por el usuario.
+					}
+				} 
+				catch(error:Error) {
+					//Logger.logError(LOG, error);
+					throw new Error (error.message);
+				}
+				finally {
+					//_svcURL=strTmp;
+					return strTmp;
+				}
+			}
+			// 20141002
+			protected function getPreferredHost():String {
+				var r:String=null;
+				try {
+					if (this.hostURL == null) {
+						r = FmkAppConf.hostURL;
+					}else {
+						r = this.hostURL; 
+					}
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);	
+				}finally {
+					return r;
+				}
+			}
+			// 20141002
+			protected function getPreferredPort():String {
+				var r:String=null;
+				try {
+					if (this.portNumber == null) {
+						r = FmkAppConf.portNumber;
+					}else {
+						r = this.portNumber; 
+					}
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);	
+				}finally {
+					return r;
+				}
+			}
+			//--
+			public function get svcName():String {
+				return this._svcName;
+			}
+			
+			public function set svcName(value:String):void {
+				this._svcName = value;
+			}
+			
+			public function get appName():String {
+				return this._appName;
+			}
+			
+			public function set appName(value:String):void {
+				this._appName = value;
+			}
+			
+			public function get portNumber():String {
+				return this._portNumber;
+			}
+			
+			public function set portNumber(value:String):void {
+				this._portNumber = value;
+			}
+			
+			public function get hostURL():String {
+				return this._hostURL;
+			}
+			
+			public function set hostURL(value:String):void {
+				this._hostURL = value;
+			}
+			
+			public function get reqProtocol():String {
+				return this._reqProtocol;
+			}
+			
+			public function set reqProtocol(value:String):void {
+				this._reqProtocol = value;
+			}
+			
+			//Ktes: --------------------------------------------------------------------------------------
+			
+			public static const DAY_NAMES_ES = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
+			public static const DAY_NAMES_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+			
+			public static const MONTH_NAMES_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+				'Julio', 'Agosto', 'Septiembre', 'Octubre','Noviembre', 'Diciembre'];
+			
+			public static const MONTH_NAMES_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+				'Jul', 'Aug', 'Sep', 'Oct','Nov', 'Dic'];
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Ojo!!!!!!!!!!! Probar como mierda le paso el event como parametro 0___0 : !!!!!!!!!!!!!!!!!! --> 
+		<mx:HTTPService id="getDateFromServer"
+						url="{getUrl()}"
+						fault="fault(event);"           
+						result="action(event);"			
+						/> 					 <!-- la action impl + la fault impl funcs q existan seteadas (x default o exxplicit x setters) --> 
+						<!-- "{_svcFault}" -->
+						<!-- "{_svcAction}" -->
+						<!-- fault="fault(event);"
+						result="action();"  -->
+		
+		<!-- x ahora asi nomas repetido.. : 
+		mx:HTTPService id="returnDateFromServer"
+		url=getUrl()
+		fault="faultReturnServerDate()"
+		result="actionReturnServerDate()" 
+		-->
+	</fx:Declarations>
+	
+	
+	<fx:Script>
+		<![CDATA[
+			/* 	public function actionReturnServerDate() { //si usan otro xml q sobreEscriban el action y listo.
+			try {
+			//"06 08 2014"
+			
+			this.selectedDate= stringToDate(getDateFromServer.lastResult.root.qry.item.fecha, "DD MM YYYYY");
+			} 
+			catch(error:Error)  {
+			throw new Error(error.message);
+			}
+			} */
+			
+			/*private function getFechaFormated(strFecha:String):Date {
+			var r:Date=null;
+			try {
+			//var currentDateTime:Date = new Date();
+			
+			//var dob:Date = DateField.stringToDate("06/30/2005", "MM/DD/YYYY");
+			
+			r = stringToDate(strFecha, "DD MM YYYYY");
+			
+			//dateTimeFormat.formatString = "DD/MM/YYYY";
+			} 
+			catch(error:Error)  {
+			throw new Error(error.message);
+			}finally {
+			return r;
+			}
+			
+			} */
+			
+			/* 	para q puedan ejecutar un servicio interno (con la url default o una propia ) y tratarlo/obtener la fecha con
+			//esta func default o sobreescribiendola si manejan otro formato de rtado xml 
+			public function getServerDate(svcGetDateUrl:String=null) {
+			try {
+			returnDateFromServer.send();
+			} 
+			catch(error:Error)  {
+			throw new Error (error.message)
+			}
+			} */
+			
+			/* 	public function faultReturnServerDate() {
+			try {
+			throw new Error(error.message);
+			} 
+			catch(error:Error)  {
+			throw new Error(error.message);
+			}
+			} */
+			
+			//20140922
+			
+			//import mx.collections.ArrayCollection;
+			//sep x comas, xa q pueda setearse en modo diseño.. //ArrayCollection=new ArrayCollection;
+			
+			private var _compPermsArrCollStr:String="";
+			
+			public function get compPermsArrCollStr():String {
+				return _compPermsArrCollStr;
+			}
+			[Inspectable]
+			public function set compPermsArrCollStr(strPermsDelimitedByCommasParam:String):void {
+				this._compPermsArrCollStr=strPermsDelimitedByCommasParam;
+			}
+			
+			//x ahora solo va a tener un solo perm, luego, hacer una func q me splitee x commas, me diga cuantos hay, me dé cada uno. etc
+			//y contemplar eso en la func recursiva en EPanel (la q controla los permisos en si)!! (x ahora como es 1 solo lo tomo y listo)
+			
+			
+		]]>
+	</fx:Script>
+</mx:DateField>

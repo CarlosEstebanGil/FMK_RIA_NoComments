@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<parsley:Objects xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				 xmlns:s="library://ns.adobe.com/flex/spark" 
+				 xmlns:mx="library://ns.adobe.com/flex/mx" 
+				 xmlns:parsley="http://www.spicefactory.org/parsley"
+				 xmlns:Application="Application.*" 
+				 xmlns:local="*"
+				 xmlns:domain="Modules.CLS.Application.domain.*" 
+				 xmlns:presentationModel="Modules.CLS.Application.presentationModel.*" xmlns:domain1="Modules.CLSModel.Application.domain.*" >
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+		<domain:CLSModel/>
+		<presentationModel:MainScreenModel/>
+
+			
+		<parsley:DynamicObject type="{EService}" id="CLSSvc" />  
+		
+		<!-- parsley:DynamicObject type="{CLSService}" id="CLSSvc" --> 
+		<!-- PRUEBA_MESSAGE}" -->
+		
+		<parsley:MapCommand type="{CLSCommand}" selector="{Messages.CLS_CONSULTA_MESSAGE}" /> 
+		<parsley:MapCommand type="{CLSCommand}" selector="{Messages.CLS_ALTA_MESSAGE}" /> 
+		<parsley:MapCommand type="{CLSCommand}" selector="{Messages.CLS_DELETE_MESSAGE}" /> 
+		<parsley:MapCommand type="{CLSCommand}" selector="{Messages.CLS_MODIF_MESSAGE}" /> 
+
+
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import Modules.CLS.Application.bussiness.commands.CLSCommand;
+			import Modules.CLS.data.conf.Messages;
+			
+			import framework.EService;
+		]]>
+	</fx:Script>
+</parsley:Objects>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009"  --> 
+<components:ECanvas xmlns:fx="http://ns.adobe.com/mxml/2009"
+				   xmlns:s="library://ns.adobe.com/flex/spark"
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   xmlns:parsley="http://www.spicefactory.org/parsley"
+				   xmlns:view="Modules.CLS.Application.view.*"
+				   xmlns:components="framework.components.*"
+				   creationComplete="initMod()"
+				   width="95%" height="95%" >
+				   <!-- width="2500" height="1000" -->
+	<fx:Declarations>
+	
+		
+		<parsley:ContextBuilder config="{CLSConfig}" complete="onLoginContextComplete();"  /> 
+		<!--viewRoot="{this}"--> <!-- parents="{this.parent}"  -->
+		<parsley:Configure  />
+	</fx:Declarations > 
+	
+	<fx:Script>
+		<![CDATA[
+			
+			public function initMod():void{
+			}
+			
+			public function onLoginContextComplete():void {
+				//textTmpPrueba="onLoginContextComplete..";	
+			}
+			
+	]]>
+	</fx:Script>
+	
+	<view:MainScreen x="45" y="24" /> <!-- width="864" height="326" -->
+
+</components:ECanvas>

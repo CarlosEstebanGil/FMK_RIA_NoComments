@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<!-- s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009"  --> 
+<components:EPanel xmlns:fx="http://ns.adobe.com/mxml/2009"  		  
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="300" height="200" 
+		 
+		  creationComplete="initMod()"
+		  
+		  xmlns:parsley="http://www.spicefactory.org/parsley" 
+		  xmlns:view="Modules.ABMPersonas.Application.view.*" 
+		  xmlns:components="framework.components.*" >
+	
+	
+	<fx:Declarations>
+	
+		
+		<parsley:ContextBuilder config="{ABMPersConfig}" complete="onLoginContextComplete();"  /> <!--viewRoot="{this}"--> <!-- parents="{this.parent}"  -->
+		
+		<parsley:Configure  />	
+		
+
+	</fx:Declarations > 
+	
+	<fx:Script>
+		<![CDATA[
+			/*import Modules.Login.Application.bussiness.Entities.DTOs.LoginDTO;
+			
+			import application.events.LoginResultEvt;
+			
+			import mx.logging.LogEventLevel;
+			
+		
+			public function initMod():void{
+				
+			}
+
+			[Bindable]
+			var textTmpPrueba:String="";
+			
+			public function onLoginContextComplete():void {
+	
+				textTmpPrueba="onLoginContextComplete..";
+				
+				
+			}*/
+			
+			
+			public function initMod():void{
+			}
+			
+			public function onLoginContextComplete():void {
+				//textTmpPrueba="onLoginContextComplete..";	
+			}
+			
+	]]>
+	</fx:Script>
+	
+	<view:MainScreen/>
+
+</components:EPanel>

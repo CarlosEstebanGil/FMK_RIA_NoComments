@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:EPanel xmlns:fx="http://ns.adobe.com/mxml/2009"
+				   xmlns:s="linibrary://ns.adobe.com/flex/spark"
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   xmlns:parsley="http://www.spicefactory.org/parsley"
+				   xmlns:components="framework.components.*"
+				   width="918" height="482" backgroundColor="#F3F5B2" creationComplete="initMod()"
+				   title="ABM Articulos">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<!-- Si o si parece q es necesario agregar c/ vista a un context sino toma el global aparentemente -->
+		<parsley:Configure />
+</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import Modules.ABMArticulos.ABMArticulosConfig;
+			import Modules.ABMArticulos.Application.bussiness.Entities.DTOs.ABMArticulosDTO_alta;
+			import Modules.ABMArticulos.Application.bussiness.Entities.DTOs.ABMArticulosDTO_baja;
+			import Modules.ABMArticulos.Application.bussiness.Entities.DTOs.ABMArticulosDTO_consulta;
+			import Modules.ABMArticulos.Application.presentationModel.MainScreenModel;
+			import Modules.ABMArticulos.data.conf.Messages;
+			
+			import application.domain.GlobalModel;
+			import application.domain.PmXXXSubDomainContextModel;
+			
+			import framework.components.events.EAutoPopulableListCompEvent;
+			
+			import mx.binding.utils.BindingUtils;
+			import mx.binding.utils.ChangeWatcher;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CalendarLayoutChangeEvent;
+			import mx.events.CloseEvent;
+			import mx.events.DragEvent;
+			import mx.events.ItemClickEvent;
+			import mx.events.MoveEvent;
+			import mx.events.ValidationResultEvent;
+			import mx.logging.LogEventLevel;
+			import mx.managers.IFocusManagerComponent;
+			import mx.utils.OnDemandEventDispatcher;
+			import mx.utils.StringUtil;
+			
+			[Inject]
+			[Bindable]
+			public var msPM:MainScreenModel;
+			
+			[Inject]
+			[Bindable]
+			public var globalModelRef:GlobalModel;
+			
+						
+			private var ctrlAcDatos:ChangeWatcher;
+			
+			private function initMod():void {
+                InicializarDatos();
+				ctrlAcDatos = BindingUtils.bindSetter( ControlAccesoDatos, txtAcDatos, "text");
+				cmbClientes.addEventListener(Event.CLOSE, HabilitarDatosArticulo);
+				
+				txtPA1.addEventListener(Event.CHANGE, CtrlPosAran1);
+				txtPA2.addEventListener(Event.CHANGE, CtrlPosAran2);
+				txtPA3.addEventListener(Event.CHANGE, CtrlPosAran3);
+				txtPA4.addEventListener(Event.CHANGE, CtrlPosAran4);
+				
+				txtPA2.addEventListener(KeyboardEvent.KEY_UP, CtrlPA2Back);
+				txtPA3.addEventListener(KeyboardEvent.KEY_UP, CtrlPA3Back);
+				txtPA4.addEventListener(KeyboardEvent.KEY_UP, CtrlPA4Back);
+				txtPADV.addEventListener(KeyboardEvent.KEY_UP, CtrlPDVBack);
+				
+				cmbArticulos.addEventListener(Event.CLOSE, BuscarArticulo);
+				lnkActualizar.addEventListener(MouseEvent.CLICK, ActualizarArticulo);
+				lnkBaja.addEventListener(MouseEvent.CLICK, ConfirmarBajaArticulo);
+				lnkNuevo.addEventListener(MouseEvent.CLICK, LlamarInicializarDatos);
+				
+			}
+			
+			[Init]
+			public function handleInit():void {
+				msPM.addEventListener(EAutoPopulableListCompEvent.UPDATE_SELECTED_VALUE,  updateComboSelectedItem); 
+			}
+
+			private function BuscarArticulo(e:Event):void {
+				if (cmbArticulos.selectedItem.data != EComboBox.NO_SELECTION_VALUE) {
+				   var buscararticuloDTO_consulta:ABMArticulosDTO_consulta = new ABMArticulosDTO_consulta (cmbArticulos.selectedItem.data);
+				   msPM.sendCompleteBuscarArticulo(Messages.ABMARTICULOS_CONSULTA_MESSAGE, buscararticuloDTO_consulta);
+				}
+			}
+			private function ActualizarArticulo(e:Event):void {
+				if (CheckDatosArticulos()) {
+				   var actarticuloDTO_alta:ABMArticulosDTO_alta = new ABMArticulosDTO_alta (cmbArticulos.selectedItem.data, cmbClientes.selectedItem.data,
+				                   cmbCodOrigen.selectedItem.data, txtPA1.text, txtPA2.text, txtPA3.text, txtPA4.text, txtPADV.text,
+				                   txtMercaderia.text, cmbUnidades.selectedItem.data, cmbUnidadesComerciales.selectedItem.data, cmbTipoProducto.selectedItem.data);
+				   msPM.sendCompleteActualizarArticulo(Messages.ABMARTICULOS_ALTA_MESSAGE, actarticuloDTO_alta);
+				}
+			}
+			
+			private function ConfirmarBajaArticulo(e:Event):void {
+				Alert.show(msPM.lblmsjeliminar,msPM.lblmsjconfirmar,Alert.YES|Alert.NO,null,EliminarArticulo,null,Alert.NO);
+
+			}
+			private function EliminarArticulo(e:CloseEvent):void {
+				if(e.detail == Alert.YES) {
+					var eliminararticuloDTO_baja:ABMArticulosDTO_baja = new ABMArticulosDTO_baja (cmbArticulos.selectedItem.data);
+					msPM.sendCompleteEliminarArticulo(Messages.ABMARTICULOS_DELETE_MESSAGE, eliminararticuloDTO_baja);
+				}
+			}
+
+			
+			private function ControlAccesoDatos(arg:*):void {
+				if (txtAcDatos.text == "ALTAOK") {
+					InicializarDatos();
+				}
+			}
+			
+			private function LlamarInicializarDatos(e:Event):void {
+				InicializarDatos();
+			}
+			private function InicializarDatos():void {
+				txtMercaderia.text = "";
+				txtPA1.text ="";
+				txtPA2.text ="";
+				txtPA3.text ="";
+				txtPA4.text ="";
+				txtPADV.text ="";
+				cmbClientes.populate();
+				cmbTipoProducto.populate();
+				lnkActualizar.enabled = false;
+				lnkBaja.enabled = false;
+				lnkNuevo.enabled = false;
+				cmbCodOrigen.enabled = false;
+				txtPA1.enabled = false;
+				txtPA2.enabled = false;
+				txtPA3.enabled = false;
+				txtPA4.enabled = false;
+				txtPADV.enabled = false;
+				txtMercaderia.enabled = false;
+				cmbArticulos.enabled = false;
+				cmbUnidades.enabled = false;
+				cmbUnidadesComerciales.enabled = false;
+				cmbTipoProducto.enabled=false;
+				cmbClientes.enabled = true;
+				cmbArticulos.selectedIndex = 0;
+				cmbCodOrigen.selectedIndex = 0;
+				cmbUnidades.selectedIndex = 0;
+				cmbUnidadesComerciales.selectedIndex = 0;
+				cmbClientes.setFocus();
+			}
+			
+			private function HabilitarDatosArticulo(e:Event):void {
+				//if (cmbClientes.selectedItem.data != EComboBox.NO_SELECTION_VALUE) {
+				 if (cmbClientes.selectedItem.data > 0) {
+					cmbClientes.enabled = false;
+					lnkActualizar.enabled = true;
+					lnkBaja.enabled = true;
+					lnkNuevo.enabled = true;
+					cmbCodOrigen.enabled = true;
+					txtPA1.enabled = true;
+					txtPA2.enabled = true;
+					txtPA3.enabled = true;
+					txtPA4.enabled = true;
+					txtPADV.enabled = true;
+					txtMercaderia.enabled = true;
+					cmbArticulos.enabled = true;
+					cmbUnidades.enabled = true;
+					cmbUnidadesComerciales.enabled = true;
+					cmbTipoProducto.enabled=true;
+					cmbCodOrigen.populate();
+					cmbUnidades.populate();
+					cmbUnidadesComerciales.populate();
+					// cmbArticulos.svcURL = globalModelRef.servicios.articuloscli;
+					cmbArticulos.populate();
+					cmbArticulos.setFocus();
+				}
+			}
+			
+			
+			private function CtrlPosAran1(e:Event):void {
+				if (txtPA1.text.length == 4) {
+					txtPA2.setFocus();
+				}
+			}
+			private function CtrlPosAran2(e:Event):void {
+				if (txtPA2.text.length == 2) {
+					txtPA3.setFocus();
+				}
+			}
+			private function CtrlPosAran3(e:Event):void {
+				if (txtPA3.text.length == 2) {
+					txtPA4.setFocus();
+				}
+			}
+			private function CtrlPosAran4(e:Event):void {
+				if (txtPA4.text.length == 3) {
+					txtPADV.setFocus();
+				}
+			}
+			
+			private function CtrlPA2Back(e:KeyboardEvent):void {
+				if (e.keyCode == 8) {
+				  txtPA1.setFocus();
+				}
+			}
+			private function CtrlPA3Back(e:KeyboardEvent):void {
+				if (e.keyCode == 8) {
+					txtPA2.setFocus();
+				}
+			}
+			private function CtrlPA4Back(e:KeyboardEvent):void {
+				if (e.keyCode == 8) {
+					txtPA3.setFocus();
+				}
+			}
+			private function CtrlPDVBack(e:KeyboardEvent):void {
+				if (e.keyCode == 8) {
+					txtPA4.setFocus();
+				}
+			}
+			
+			private function CheckDatosArticulos():Boolean {
+
+				if (cmbArticulos.selectedIndex == 0) {
+					Alert.show(msPM.msjSeleccioneArticulo, msPM.msjSistema);
+					return false;
+				}
+				if (cmbCodOrigen.selectedIndex == 0) {
+					Alert.show(msPM.msjSeleccioneCodOrigen, msPM.msjSistema);
+					return false;
+				}
+				if (StringUtil.trim(txtMercaderia.text).length == 0) {
+					Alert.show(msPM.msjIngreseMercaderia, msPM.msjSistema);
+					return false;
+				}
+				
+				if (cmbUnidades.selectedIndex == 0) {
+					Alert.show(msPM.msjSeleccioneUnidad, msPM.msjSistema);
+					return false;
+				}
+				if (cmbUnidadesComerciales.selectedIndex == 0) {
+					Alert.show(msPM.msjSeleccioneUnidadComercial, msPM.msjSistema);
+					return false;
+				}
+				if (cmbTipoProducto.selectedIndex == 0) {
+					Alert.show(msPM.msjSeleccioneTipoProducto, msPM.msjSistema);
+					return false;
+				}
+				if (txtPA1.text.length < 4) {
+					Alert.show(msPM.msjPosAranIncompleta, msPM.msjSistema);
+					return false;
+				}
+				if (txtPA2.text.length < 2) {
+					Alert.show(msPM.msjPosAranIncompleta, msPM.msjSistema);
+					return false;
+				}
+				if (txtPA3.text.length < 2) {
+					Alert.show(msPM.msjPosAranIncompleta, msPM.msjSistema);
+					return false;
+				}
+				if (txtPA4.text.length < 3) {
+					Alert.show(msPM.msjPosAranIncompleta, msPM.msjSistema);
+					return false;
+				}
+				if (txtPADV.text.length < 1) {
+					Alert.show(msPM.msjIngreseDigitoVerificador, msPM.msjSistema);
+					return false;
+				}
+				
+                return true;				
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<!-- UI .. --> 
+	
+	<components:ECanvas id="contenedor" x="16" y="5" width="883" height="383">
+		<components:EFieldSet x="25" y="80" legend="Datos" width="837" height="264"
+							  cornerRadius="5" gap="2" 
+							  paddingLeft="1" paddingRight="1">
+			<components:ELabel id="lblCodOrigen" x="44" y="60" width="110" height="20"
+							   text="{msPM.lblcodorigen}"/>
+			<components:EComboBox id="cmbCodOrigen" x="164" y="56" width="333" height="24"
+								  hostURL="localhost" idFieldName="pais" orderFieldName="pais"
+								  orderType="asc" tabIndex="5" tableName="paises"
+								  valueFieldName="idpais"/>
+			<components:ELabel id="lblPosArancelaria" x="44" y="91" width="108" height="18"
+							   text="{msPM.lblposarancelaria}"/>
+			<components:ELabel id="lblMercaderia" x="44" y="119" width="113" height="19"
+							   text="{msPM.lblmercaderia}"/>
+			<components:ETextInput id="txtMercaderia" x="164" y="115" width="396" maxChars="50"
+								   prompt="Ingrese la descripcion de la mercaderia..." tabIndex="11"
+								   text="{msPM.mercaderia}"/>
+			<components:ELabel id="lblUnidades" x="45" y="147" width="114" height="15"
+							   text="{msPM.lblunidades}"/>
+			<components:EComboBox id="cmbUnidades" x="163" y="142" width="277" height="24"
+								  hostURL="localhost" idFieldName="lummuntmsr"
+								  orderFieldName="lummuntmsr" orderType="asc" tabIndex="12"
+								  tableName="unidades" valueFieldName="kunfac"/>
+			
+			<components:ELabel id="lblUnidadComercial" x="45" y="173" width="114" height="16"
+							   text="{msPM.lblunidadcomercial}"/>
+			<components:EComboBox id="cmbUnidadesComerciales" x="163" y="172" width="277" height="25"
+								  hostURL="localhost" idFieldName="lummuntmsr"
+								  orderFieldName="lummuntmsr" orderType="asc" tabIndex="13"
+								  tableName="unidades_comercial" valueFieldName="kunfac"/>
+			<components:ELabel id="lblTIpoProducto" x="46" y="203" width="107" height="18"
+							   text="{msPM.lbltipoproducto}"/>
+			<components:EComboBox id="cmbTipoProducto" x="163" y="203" width="346" height="25"
+								  hostURL="localhost" idFieldName="nombre"
+								  orderFieldName="nombre" orderType="asc" tabIndex="14"
+								  tableName="tipo_producto" valueFieldName="id"/>
+			<components:ELabel id="lblidarticulo" x="45" y="33" width="114" height="17"
+							   text="{msPM.lblidarticulo}"/>
+			<components:ETextInput id="txtPA1" x="164" y="88" width="37" maxChars="4" restrict="0-9"
+								   tabIndex="6" text="{msPM.pa1}"/>
+			<components:ETextInput id="txtPA2" x="204" y="88" width="24" maxChars="2" restrict="0-9"
+								   tabIndex="7" text="{msPM.pa2}"/>
+			<components:ETextInput id="txtPA3" x="232" y="88" width="24" maxChars="2" restrict="0-9"
+								   tabIndex="8" text="{msPM.pa3}"/>
+			<components:ETextInput id="txtPA4" x="259" y="88" width="28" maxChars="3" restrict="0-9"
+								   tabIndex="9" text="{msPM.pa4}"/>
+			<components:ETextInput id="txtPADV" x="290" y="88" width="15" maxChars="1"
+								   restrict="A-Za-z" tabIndex="10" text="{msPM.padv}"
+								   typographicCase="uppercase"/>
+			<components:EQuickFinder id="cmbArticulos" x="165" y="25" width="332"
+									 hostURL="localhost" idFieldName="articulo"
+									 orderFieldName="articulo" orderType="asc" tabIndex="4"
+									 tableName="catalogo_impo" valueFieldName="articulo"/>
+		</components:EFieldSet>
+		<components:ETextInput x="25" y="8" id="txtAcDatos" text="{msPM.CtrlacDatos}"/>
+		<components:EHGroup id="hgMenuArticulos" x="661" y="12" width="197" height="27">
+			<components:ELinkButton id="lnkNuevo" label="{msPM.lbllnkNuevo}" tabIndex="1"/>
+			<components:ELinkButton id="lnkActualizar" label="{msPM.lbllnkActualizar}" tabIndex="2"/>
+			<components:ELinkButton id="lnkBaja" label="{msPM.lblnkBaja}" tabIndex="3"/>
+		</components:EHGroup>
+		<components:ELabel id="lblBeneficiario" x="47" y="49" width="87" height="19"
+						   text="{msPM.lblCmbClientes}"/>
+		<components:EComboBox id="cmbClientes" x="131" y="44" width="336" height="24"
+							  hostURL="localhost" idFieldName="cliente" orderFieldName="cliente"
+							  orderType="asc" tabIndex="0" tableName="clientes"
+							  valueFieldName="idcliente"/>
+	</components:ECanvas>
+	<components:EButton id="btnCerrar" x="871" y="-26" width="32" label="X" />
+
+	<!-- Validaciones ... -->
+	
+	<fx:Declarations>
+		<mx:PhoneFormatter id="frtPosArancelaria" formatString="####.##.##.####"  />
+	</fx:Declarations>
+	
+	<fx:Binding source="msPM.cmbIndexArticulos" destination="cmbArticulos.selectedItem.datat" twoWay="true" />	
+	<fx:Binding source="msPM.cmbIndexClientes" destination="cmbClientes.selectedItem.data" twoWay="true" />
+	<fx:Binding source="msPM.cmbIndexCodOrigen" destination="cmbCodOrigen.selectedItem.data" twoWay="true" />
+	<fx:Binding source="msPM.pa1" destination="txtPA1.text" twoWay="true" />	
+	<fx:Binding source="msPM.pa2" destination="txtPA2.text" twoWay="true" />	
+	<fx:Binding source="msPM.pa3" destination="txtPA3.text" twoWay="true" />	
+	<fx:Binding source="msPM.pa4" destination="txtPA4.text" twoWay="true" />	
+	<fx:Binding source="msPM.padv" destination="txtPADV.text" twoWay="true" />	
+	<fx:Binding source="msPM.mercaderia" destination="txtMercaderia.text" twoWay="true" />
+	<fx:Binding source="msPM.cmbIndexUnidades" destination="cmbUnidades.selectedItem.data" twoWay="true" />
+	<fx:Binding source="msPM.cmbIndexUnidadesComerciales" destination="cmbUnidadesComerciales.selectedItem.data" twoWay="true" />
+	<fx:Binding source="msPM.cmbIndexTipoProducto" destination="cmbTipoProducto.selectedItem.data" twoWay="true" />
+</components:EPanel>

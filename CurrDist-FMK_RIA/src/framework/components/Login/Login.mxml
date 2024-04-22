@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 20141001: MODIFICADO PARA NO SER MAS CON PARSLEY  SINO INDEPENDIENTE. Motivación: en el fmkRia como proyecto funciona todo per
+				compilando el projecto como fmkkria.swc, dentro parsley no funciona (al - no asi nomas como siempre) -->
+
+<!-- s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009"  --> 
+<components:ECanvas xmlns:fx="http://ns.adobe.com/mxml/2009"  		  
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="478" 
+		  height="308" 
+		  x="350"
+		  y="100"
+		  creationComplete="initMod()"
+		  backgroundColor="#E5DE70" 
+		 
+		  xmlns:view="framework.components.Login.Application.view.*" 
+		  xmlns:components="framework.components.*" >
+		  <!-- xmlns:parsley="http://www.spicefactory.org/parsley" --> <!-- <_____ 20141001: ELIMINO TODA DEPENDENCIA DE PARSLEY. -->
+	
+	<!-- addedToStage="FlexContextBuilder.build(Modules.Login.LoginConfig, this)" -->
+	<!-- s:Module xmlns:fx="http://ns.adobe.com/mxml/2009" -->
+	<fx:Declarations>
+	
+		<!-- 20141001 parsley:ContextBuilder config="{LoginConfig}" complete="onLoginContextComplete();"  --> <!--viewRoot="{this}"--> <!-- parents="{this.parent}"  -->
+			
+			<!-- parsley:MessageSettings defaultReceiverScope="local" -->
+			<!-- parsley:Scope name="module" inherited="true"  
+			 	 parsley:ViewSettings autoremoveViewRoots="false" -->
+			<!-- /parsley:ContextBuilder -->
+		
+		<!-- 20141001: parsley:Configure  -->	
+		
+		<s:TraceTarget includeCategory="true" includeLevel="true" includeTime="true" level="{LogEventLevel.DEBUG}">
+			<s:filters>
+				<fx:String>org.spicefactory.parsley.*</fx:String>
+			</s:filters>
+		</s:TraceTarget>
+		
+	</fx:Declarations > <!-- config="Modules.Login.LoginConfig" -->
+	<!-- parsley:ContextBuilder config="Modules.Login.LoginConfig"  --> 
+	
+	<fx:Script>
+		<![CDATA[
+			import framework.EFlexEvent;
+			import framework.IMainAppGlobalModel;
+			import framework.components.Login.Application.bussiness.Entities.DTOs.LoginDTO;
+			import framework.components.Login.Application.domain.LoginGlobalModel;
+			import framework.components.Login.Application.view.MainScreen;
+			import framework.components.Login.data.conf.Messages;
+			
+			import mx.logging.LogEventLevel;
+			import mx.utils.object_proxy;
+			
+			
+			//20140828
+			public static const LOGIN_GRANTED_RESPONSE_MESSAGE:String="LOGIN_GRANTED";
+			public static const LOGIN_DENIED_RESPONSE_MESSAGE:String="LOGIN_DENIED";
+			
+			public static const LOGIN_FAIL_RESPONSE_MESSAGE:String ="LOGIN_FAILED";
+			
+			//No se puede referenciar una cte de clase desde otra clase e parece.. x ahi x q generaría una dependencia en el orden de creacion
+			// de las clases en memoria xa la vm.. ni idea.. 
+			//public static const LOGIN_REQUEST_MESSAGE:int =Messages.object_proxy.LOGIN_REQUEST_MESSAGE; //lo dejo acá xa el user final pero xa la la conf.mxml xa el fmk parsley ta en msges( centrazilado)
+		
+			/* 20141001 : elimino toda dependencia parsley:
+			[Inject]
+			[Bindable]
+			public var loginGlobalModel:LoginGlobalModel; //aca meto las var handlers xa q sean accesibles desde todas las capas de este modulo
+														  //de login (ej desde CMD O SVC .ONrESULT/ONfAULT) PERO 
+			//XA q a su vez ya sean atribs de este comp meto unos wrappers de los getters y setters de los handlers acá mismo.
+			*/
+			
+			/// -- --- 20141001 : desde la app usuaria le seteo el model al eap (xq el eap es el q usa el login) y este eap le setea el
+			//language, (usando un getter del obj model en uso), al componente login q es creado/usado por el eap mismo.
+			[Bindable]
+			private var loginGlobalModel:LoginGlobalModel=new LoginGlobalModel; // el loginGlobalModel q ni se usa igual esta bien q lo cree el login.
+			
+			//20141001 : 
+			[Bindable]	
+			private var _AppGlobalModel:IMainAppGlobalModel; //=new LoginGlobalModel;
+			
+			public function get AppGlobalModel():IMainAppGlobalModel {
+				return _AppGlobalModel;
+			}
+			[Inspectable] //inspectable medio al pedo xq el login no lo estoy usando x mxml sino por as3 en el eap..
+			public function set AppGlobalModel(value:IMainAppGlobalModel):void {
+				_AppGlobalModel = value;
+			} 	
+			//-- --- 
+
+			public function setResultGrantedAction(f:Function):void{
+				loginGlobalModel.onResultGranted = f;
+			}
+			
+			public function setResultDeniedAction(f:Function):void{
+				loginGlobalModel.onResultDenied=f;	
+			}
+
+			public function setFaultAction(f:Function):void{
+				loginGlobalModel.onFault=f;	
+			}
+
+			private var _loginUrl:String=null;
+			public function get loginUrl():String {
+				return _loginUrl;
+			}
+			
+			public function set loginUrl(completeURL:String):void {
+				_loginUrl = completeURL;
+			}
+			
+			
+			/*import org.spicefactory.parsley.context.ContextBuilder;
+			import org.spicefactory.parsley.core.context.Context;
+			import org.spicefactory.parsley.flex.FlexConfig;
+			import org.spicefactory.parsley.flex.FlexContextBuilder;*/
+			 
+			/*[Inject]
+			[Bindable]
+			public var msPM:MainScreenModel; new 20140417 */ 
+			
+			/*	[MessageDispatcher]
+			public var dispatcher:Function; //oJO, acá el tipo para function es con F Mayúscula! Function y no function.
+			
+			private function _aceptarClick():void { //como tiene q lanzar el msge x parsley se anota con[messageDispatcher]!!
+				  dispatcher(new RSSMessage(RSSMessage.RECUPERA_RSS)); //ojo acá crea la instancia / objeto mensaje 
+				// acá vá el type del mensaje (const def en el msge class)
+				//y en el execute method del command asociado recibe como param
+				//la instancia ya de esa clase concreta de message y no un int */
+				
+				/* prueba 2 (tmp)
+				var loginDTO:LoginDTO = new LoginDTO(txtUserName.text,txtUserPass.text);
+				//msPM.sendLoginRequestMSG(LoginRequestMessage.LOGIN_REQUEST_MESSAGE,loginDTO);
+				
+				//-- agrego lo q hacia el pm:
+				
+				var loginRequestMessage:LoginRequestMessage= new LoginRequestMessage(LoginRequestMessage.LOGIN_REQUEST_MESSAGE);
+				loginRequestMessage.data=loginDTO; //loginDTOParam;
+				
+				//sendMessage(loginRequestMessage); (**vá=
+				//--
+				// (*viene) .. y llamo al disptacher def aca y no en el pm:
+				dispatcher(loginRequestMessage);	 
+				
+				
+				dispatcher(new LoginRequestMessage(LoginRequestMessage.LOGIN_REQUEST_MESSAGE));
+			}*/
+			
+			public function initMod():void{
+				// FlexContextBuilder.build(LoginConfig, this);
+				//20141001: 
+				handleInit();
+				
+			}
+
+			[Bindable]
+			private var textTmpPrueba:String="";
+			
+			public function onLoginContextComplete():void {
+	
+				//textTmpPrueba="onLoginContextComplete..";
+				
+				
+				
+					//btnAccept.enabled=true; //tmpoco era el problema de q el handler no habia sido injectado x q su context no estaba creado
+				
+				//addEventListener(LoginResultEvt.LOGIN_RESULT_EVT, loginResultEvtHandlerWrapper);
+				
+			}
+			
+			/* 
+			public function loginResultEvtHandlerWrapper(evt:Event):void { //todo sacarle lo de public..
+				trace("llegó"); //.. tmp .. hacer lo de abajo..
+				//model.disptachHandleLoginResponse( new parsley msg y conf todo parsley interno ya.. )
+				//osea como q los comunico a traves de event normal de flash y desp qda interno con parsley
+			} */
+			
+		/*	[Init]
+			public function handleInit():void
+			{
+				btnAccept.enabled=true;
+			}
+			*/
+			
+			//20141001: comento init (parsley meta tag) y lo invoco desde creationComplte() ..
+			//[Init]
+			public function handleInit():void {
+				ms.addEventListener(Messages.LOGIN_DENIED_RESPONSE_MESSAGE, loginResultEvtHandlerWrapper);
+				ms.addEventListener(Messages.LOGIN_GRANTED_RESPONSE_MESSAGE, loginResultEvtHandlerWrapper);
+				ms.addEventListener(Messages.LOGIN_FAIL_RESPONSE_MESSAGE, loginResultEvtHandlerWrapper);
+				
+				loginGlobalModel.loginUrl= this.AppGlobalModel.getServices().login; //this.loginUrl; //le paso al modelo del login el param q viene desde el cli.
+			}
+			
+			
+			public function loginResultEvtHandlerWrapper(evt:EFlexEvent):void { //(evt:Event):void { 
+				//trace("llegó a login comp!"); 
+				try {
+					var dummyEvent:EFlexEvent =  new EFlexEvent(evt.type); //evt as EFlexEvent;
+					dummyEvent.data=evt.data;
+					dispatchEvent(dummyEvent); //dispatchEvent(evt); // a ver si de acá llega al login.. ? .. !!!!!!!!!!!!!!!!!!!!! ?????????????????????????
+				}catch (error:Error) {
+					throw new Error (error.message);
+				}
+			}
+	
+	/*<components:ECanvas>
+		<components:ELabel x="94" y="64" width="47" height="18" text="User:"/>
+		<components:ELabel x="94" y="90" width="47" height="18" text="Name:"/>
+		<components:ETextInput x="160" y="60" id="txtUserName" text="{textTmpPrueba}"/>
+		<components:ETextInput x="160" y="86" id="txtUserPass"/>
+		<components:EButton x="140" y="156" label="Cancel" id="btnCancel"/>
+		<components:EButton x="218" y="156" label="Accept" id="btnAccept" click="_aceptarClick()" /> <!-- enabled="false" -->
+		<components:ETextInput text="" id= "txtTmp"/>
+	</components:ECanvas>*/
+		
+			//(*)viene:
+			public var ms:MainScreen;
+			public function create():void{
+				try {
+					ms=new MainScreen;
+					//<view:MainScreen id="ms" x="39" y="26" width="401" height="249" AppGlobalModel="{AppGlobalModel}"/>
+					ms.id="ms";
+					ms.x=39; ms.y=26; ms.width=401; ms.height=249; 
+					ms.AppGlobalModel=this.AppGlobalModel;
+					//this.loginGlobalModel.url= HACE FALTA??? o el eap ya lo mete a login tomandola de services del model ya cargado?
+					ms.loginGlobalModel=this.loginGlobalModel;
+					
+					this.addElement(ms);
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+	]]>
+	</fx:Script>
+	<!-- 20141001 : le agrego la ref al modelo global xa q el mainscreen la disponga tmb! -->
+	
+	<!-- ya no lo puedo crear asi, xq x ahi queda desSyncronizaddo, xq si hago el new y esto se ejecuta antes de q haga el setModel ent
+	le asigaría null, asi q ahora hago un setter publico xa crear la instancia del mainscreen de login (y q el eap lo use) -->
+	<!-- view:MainScreen id="ms" x="39" y="26" width="401" height="249" AppGlobalModel="{AppGlobalModel}" -->  <!-- 	(*)vá 		-->
+	
+<!-- /s:Module -->
+
+<!-- /s:Panel -->
+</components:ECanvas>

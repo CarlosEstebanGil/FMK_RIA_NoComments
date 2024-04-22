@@ -1,0 +1,311 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<components:MainApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+							xmlns:s="library://ns.adobe.com/flex/spark"
+							xmlns:mx="library://ns.adobe.com/flex/mx"
+							xmlns:parsley="http://www.spicefactory.org/parsley"
+							xmlns:view="application.view.*"
+							xmlns:ABMPersView="Modules.ABMPersonas.Application.view.*"
+							xmlns:ec="components.*"
+							xmlns:model="domain.*"
+							xmlns:ABMPers="Modules.ABMPersonas.*"
+							xmlns:components="framework.components.*"
+							xmlns:Login="Modules.Login.*"
+							xmlns:MenuInicial="Modules.MenuInicial.*"
+							creationComplete="onCreationComplete_handler(event)"
+							initialize="onInitialize_handler(event)"
+							width="95%" height="1400" backgroundColor="#E5DE70">
+							<!-- width="950" height="700" backgroundColor="#E5DE70" -->
+	<s:Scroller id="myScroller" verticalScrollBar="{new VScrollBar()}" visible="false" alpha="0"/> 
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<parsley:ContextBuilder config="{config}"  complete="onMainContextComplete();"/>
+		<parsley:Configure />
+		
+		<s:TraceTarget
+			includeCategory="true"
+			includeLevel="true"
+			includeTime="true"
+			level="{LogEventLevel.DEBUG}">
+			<s:filters>
+				<fx:String>org.spicefactory.parsley.*</fx:String>
+				<!-- fx:String > framework.* < fx:String -->
+			</s:filters>
+		</s:TraceTarget>
+		
+		<!-- 20140828 -->
+		<!-- mx:HTTPService id="svcConfig"
+						url="data/conf/services.xml"
+						fault="services_configuration_fault_handler"
+						result="setServices();"
+						
+						--> <!-- fault="Alert.show('error');" -->
+		
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import Modules.MenuInicial.MenuInicial;
+			
+			import application.domain.GlobalModel;
+			
+			import framework.EFlexEvent;
+			import framework.components.EApplication;
+			
+			import mx.collections.XMLListCollection;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.events.ModuleEvent;
+			import mx.logging.LogEventLevel;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.Application;
+			
+			public static const CON_LOGIN:Boolean=true;
+			
+			public static const SERVER:String= "10.0.100.133"; //"localhost"; // "localhost"; 
+			public static const PORT:String="8080";
+			public static const SERVER_CONTEXT:String="/FMK-DynamicWEB/ServiceLocator?svc=";
+			
+			
+			
+			//var logTarget:TraceTarget
+			
+			[Inject  (id="GlobalModel")]
+			[Bindable]
+			public var model:GlobalModel;
+		
+			//20140828
+			private var eap:EApplication=new EApplication();
+			
+			//20140828 public var login:Login; 
+			
+			private var _conLogin:Boolean=CON_LOGIN;
+			private var _serverURL:String = SERVER_URL;
+			
+			//20140828
+			//public static const SERVICES_LOADED_OK:String = "SERVICES_LOADED_OK";
+			//20140828:
+			
+
+			protected function onCreationComplete_handler(event:FlexEvent):void { 	
+				
+			} 
+	
+			/* 20140828
+			public function loginResultEvtHandlerWrapper(evt:Event):void {
+				trace("llegó");
+			}
+			*/
+			
+			private function loadInitConf():void{
+				//load services configuration
+				try {
+					eap.loadStandardConf();
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+				
+				//load other confs.. 
+			}
+		
+			private function moduleInit():void {		
+			} 
+			
+			public function onMainContextComplete():void {
+			}
+			
+			public function moduloCargado(event:ModuleEvent):void { 
+				/*logTarget = new TraceTarget();
+				logTarget.level = LogEventLevel.ALL;*/
+			} 
+			
+			[Init]
+			public function handleInit():void {
+				//20140828
+				// 
+				
+				 
+					// PRUEBA SANDBOX: -> 
+				//20141028 Alert.show(  );
+				 
+				
+				// 20141027 prueba, volver a habilitar
+				preConf();
+				
+				loadInitConf();  //este [init] es el de parsley.. luego de cargar la conf es q se crea el comp login .. y ya estaria el model injected..
+				
+				//rest of initializations.. 
+			}
+
+//20140828			
+//			private function servicesLoadedOK_handler(evt:Event):void {
+//				 
+//				 
+//				// -- 20140703
+//				// menuInicial.x= 16; 			// se encargue de instanciar y setear .. 
+//				// menuInicial.y= 13; 
+//				// menuInicial.width= 1000; 
+//				// menuInicial.height=740;  
+//				// -- 
+//				
+//				menuInicial.id="menuInicialComp";
+//				
+//				/ 
+//								
+//				this.addElement(menuInicial);  
+//				 
+//			   // 20140809 prueba, volver a dejar. ------------------ */ 
+//			
+//				//20140812 this.addElement(new IngresoGastos);     
+//				
+//				//var msg:Alert = Alert.show("DESCARGA COMPLETA"); 
+//				//prueba 20140723 ->> // 
+//				
+//			} 
+//			
+			private function preConf():void {
+				try {
+					//2014 
+					eap.mainGlobalModel=model;  
+					eap.addEventListener(EApplication.CONF_LOADED_OK_FINAL,svcdefhndl);  
+					eap.hostURL=SERVER;
+					eap.portNumber=PORT;
+					eap.onConfLoadedERR=confErr;
+					eap.startMainApp=startApp;
+					eap.mainApp=this;
+				} 
+				catch(error:Error)  {
+					throw new Error (error.message);
+				}finally {
+					
+				}
+			}
+		/*20140828 	
+			public function confOK() {
+				try {
+					
+				} 
+				catch(error:Error)  {
+					throw new Error (error.message);
+				}
+			}
+			20140828 */
+			public function startApp():void {
+				try {
+					
+					/*this.menuInicial = new MenuInicial();
+					 */
+					executeApp(new MenuInicial());
+					
+				} 
+				catch(error:Error)  {
+					throw new Error (error.message);
+				}
+			}
+/*20140828			
+			private function startApplication() {
+				try
+				{
+					this.addElement(menuInicial); 
+				} 
+				catch(error:Error) 
+				{
+					throw new Error(error.message);
+				} finally {
+				
+				}
+			}
+*/			
+			//20141205 mepa q sobra, si es así sacar! desp de la reunion : --
+			public function svcdefhndl(event:EFlexEvent):void {
+				try {
+					model.setServices( (event.data as GlobalModel).getServices() );  
+					model.setPerms( (event.data as GlobalModel).getPerms() );	 
+					model.setLanguage( (event.data as GlobalModel).getLanguage() );
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}//-eof sacar 20141205 --
+			
+			public function confErr():void {
+				try {
+					Alert.show( "Error de comunicación con el Servidor. Re-intente o Contactese con Servicio de Ayuda.");
+				} 
+				catch(error:Error)  {
+					throw new Error (error.message);
+				}
+			}
+			
+		
+			/*20140828   
+			public function downloadKPISegImpoOK_handler(evt:Event):void {
+				Alert.show("DESCARGA EXITOSA");
+			} */ 
+
+ 
+		
+			 
+			
+			 
+			private function onInitialize_handler(e:Event):void {
+			 
+			}
+			override public function get conLogin():Boolean 
+			{
+				return _conLogin;
+			}
+		
+			override public function get serverURL():String {
+				return this._serverURL;
+			}
+			
+			//20140828 public var menuInicial:MenuInicial=null;
+
+/* 20140828			
+			 
+				
+				menuInicial.id="menuInicialComp";
+				
+				this.addElement(menuInicial);
+				
+				//20140703
+				//20140716: 
+				//menuInicial.addEventListener("DOWNLOADKPISegImpoOK", downloadKPISegImpoOK_handler);
+				
+				//this.addElement(menuInicial);  
+				
+				
+//				this.menuInicial = new MenuInicial();
+//				menuInicial.x= 16; 			 
+//				menuInicial.y= 13; 
+//				menuInicial.width= 1000; 
+//				menuInicial.height=740; 
+//				menuInicial.id="menuInicialComp"
+//				this.addElement(menuInicial);
+				
+			}
+*/
+			/*20140828
+			 
+*/
+			public static const SERVER_URL:String="http://"+SERVER+":"+PORT+SERVER_CONTEXT; //+ svcName&param1=val1&..&uparamn=valn 
+		]]>
+	</fx:Script>
+	
+	<!-- mx:ModuleLoader id="Login" url="Modules/Login/Login.swf" ready="moduleInit();" -->
+
+	<!-- components:ELogo width="600" height="129" horizontalCenter="0" verticalCenter="-208" -->
+	
+	
+<!-- ABMPers:ABMPersonas --> 
+	<!-- 20140528 lo hago syncronizado.. x q se ejecuta sino x ahi el creationComplete del comp login antes q la carga de los servicios! -->
+	
+	<!-- Login:Login x="36" y="143" width="529" height="347" id="LoginComp" -->	
+	
+	<!-- MainScreen prueba 20140422 -->
+	<!-- components:ELabel id="lblTmpPruebas" x="36" y="504" width="363" height="24"
+					   text=" { 'User Logged In Status: ' +  String(model.loginResult) } -->
+	<!-- xa pruebas conviene diseñarlo asi MenuInicial:MenuInicial -->
+</components:MainApplication>

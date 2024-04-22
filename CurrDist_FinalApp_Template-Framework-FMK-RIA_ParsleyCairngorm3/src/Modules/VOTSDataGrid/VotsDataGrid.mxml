@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009"  --> 
+<components:ECanvas xmlns:fx="http://ns.adobe.com/mxml/2009"
+				   xmlns:s="library://ns.adobe.com/flex/spark"
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   xmlns:parsley="http://www.spicefactory.org/parsley"
+				   xmlns:view="Modules.VOTSDataGrid.Application.view.*"
+				   xmlns:components="framework.components.*"
+				   width="95%" height="95%" creationComplete="initMod()">
+	<fx:Declarations>
+		<parsley:ContextBuilder config="{VotsDataGridConfig}" complete="onLoginContextComplete();"  /> 
+		<parsley:Configure  />
+	</fx:Declarations > 
+	
+	<fx:Script>
+		<![CDATA[
+			import Modules.VOTSDataGrid.Application.view.MainScreen;
+			public function initMod():void{
+				var ms:MainScreen=new MainScreen();
+				ms.svcUrl=this.svcUrl;
+				ms.lblTitle=this.lblTitle;
+				ms.x=45; 
+				ms.y=40;
+				this.addElement(ms);
+				//votsDGFMainContainerApp.svcUrl=this.svcUrl;
+			}
+			
+			public function onLoginContextComplete():void {
+				//textTmpPrueba="onLoginContextComplete..";	
+			}
+	]]>
+	</fx:Script>
+	
+	
+	<!-- sino no puedo pasarle el param sync.. view:MainScreen id="votsDGFMainContainerApp" x="45" y="40" --> <!-- width="650" height="326" -->
+
+</components:ECanvas>

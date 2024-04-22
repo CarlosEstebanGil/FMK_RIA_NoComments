@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<parsley:Objects xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				 xmlns:s="library://ns.adobe.com/flex/spark" 
+				 xmlns:mx="library://ns.adobe.com/flex/mx" 
+				 xmlns:parsley="http://www.spicefactory.org/parsley"
+				 xmlns:Application="Application.*" 
+				 xmlns:local="*" 
+				 xmlns:domain="Modules.Porteria_3PL.Application.domain.*" 
+				 xmlns:presentationModel="Modules.Porteria_3PL.Application.presentationModel.*" xmlns:domain1="Modules.Porteria_3PLModel.Application.domain.*" >
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+		<domain:Porteria_3PLModel/>
+		<presentationModel:MainScreenModel/>
+
+			
+		<parsley:DynamicObject type="{EService}" id="svc" />  
+		
+		<!-- parsley:DynamicObject type="{Porteria_3PLService}" id="Porteria_3PLSvc" --> 
+		<!-- PRUEBA_MESSAGE}" -->
+		
+		<parsley:MapCommand type="{Porteria_3PLCommand}" selector="{Messages.PORTERIA_3PL_CONSULTA_MESSAGE}" /> 
+		<parsley:MapCommand type="{Porteria_3PLCommand}" selector="{Messages.PORTERIA_3PL_ALTA_MESSAGE}" /> 
+		<parsley:MapCommand type="{Porteria_3PLCommand}" selector="{Messages.PORTERIA_3PL_DELETE_MESSAGE}" /> 
+		<parsley:MapCommand type="{Porteria_3PLCommand}" selector="{Messages.PORTERIA_3PL_MODIF_MESSAGE}" /> 
+		
+		<parsley:MapCommand type="{EspecificStandardCommand1}" selector="{Messages.PORTERIA_3PL_EXTRA_STANDARD_STANDALONE_CMD1}"  />
+		<parsley:MapCommand type="{EspecificFileDownloadCommand1}" selector="{Messages.PORTERIA_3PL_EXTRA_FILEDOWNLOAD_STANDALONE_CMD1}" />
+
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import Modules.Porteria_3PL.Application.bussiness.commands.EspecificFileDownloadCommand1;
+			import Modules.Porteria_3PL.Application.bussiness.commands.EspecificStandardCommand1;
+			import Modules.Porteria_3PL.Application.bussiness.commands.Porteria_3PLCommand;
+			
+			import Modules.Porteria_3PL.data.conf.Messages;
+			
+			import framework.EService;
+		]]>
+	</fx:Script>
+</parsley:Objects>

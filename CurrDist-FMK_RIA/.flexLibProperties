@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties includeAllClasses="true" useMultiPlatformConfig="false" version="3">
+  <includeClasses>
+    <classEntry path="framework.EFlexEvent"/>
+    <classEntry path="framework.FmkAppConf"/>
+    <classEntry path="framework.Fmk_Messages"/>
+    <classEntry path="framework.IABMCommand"/>
+    <classEntry path="framework.ICommand"/>
+    <classEntry path="framework.IDispatcher"/>
+    <classEntry path="framework.IExecutable"/>
+    <classEntry path="framework.IMainAppGlobalModel"/>
+    <classEntry path="framework.IMessage"/>
+    <classEntry path="framework.IModel"/>
+    <classEntry path="framework.IParsleyCommand"/>
+    <classEntry path="framework.IProfile"/>
+    <classEntry path="framework.IService"/>
+    <classEntry path="framework.Logger"/>
+    <classEntry path="framework.components.AbstractGenericServicePopulableListComponent"/>
+    <classEntry path="framework.components.AbstractGenericServicePopulableSparkDGComponent"/>
+    <classEntry path="framework.components.AbstractListBaseAutoSvcPopulable"/>
+    <classEntry path="framework.components.EAreaChart"/>
+    <classEntry path="framework.components.EBarChart"/>
+    <classEntry path="framework.components.EBorderContainer"/>
+    <classEntry path="framework.components.EButton"/>
+    <classEntry path="framework.components.EButtonBar"/>
+    <classEntry path="framework.components.ECanvas"/>
+    <classEntry path="framework.components.ECheckBox"/>
+    <classEntry path="framework.components.EColumnChart"/>
+    <classEntry path="framework.components.EComboBox"/>
+    <classEntry path="framework.components.EComboBoxEditable"/>
+    <classEntry path="framework.components.EComboBox_OldIdea_Backup"/>
+    <classEntry path="framework.components.EDataGrid"/>
+    <classEntry path="framework.components.EDateChooser"/>
+    <classEntry path="framework.components.EDateField"/>
+    <classEntry path="framework.components.EFieldSet"/>
+    <classEntry path="framework.components.EForm"/>
+    <classEntry path="framework.components.EHGroup"/>
+    <classEntry path="framework.components.ELabel"/>
+    <classEntry path="framework.components.ELineChart"/>
+    <classEntry path="framework.components.ELinkButton"/>
+    <classEntry path="framework.components.EList"/>
+    <classEntry path="framework.components.ELogo"/>
+    <classEntry path="framework.components.EMenuBar"/>
+    <classEntry path="framework.components.EPanel"/>
+    <classEntry path="framework.components.EPieChart"/>
+    <classEntry path="framework.components.EQuickFinder"/>
+    <classEntry path="framework.components.ERadioButton"/>
+    <classEntry path="framework.components.ERichEditableText"/>
+    <classEntry path="framework.components.ERichText"/>
+    <classEntry path="framework.components.ETabNavigator"/>
+    <classEntry path="framework.components.ETextArea"/>
+    <classEntry path="framework.components.ETextInput"/>
+    <classEntry path="framework.components.ETree"/>
+    <classEntry path="framework.components.EVGroup"/>
+    <classEntry path="framework.components.IAbstractListBaseAutoSvcPopulable"/>
+    <classEntry path="framework.components.IAbstractSparkDGAutoSvcPopulable"/>
+    <classEntry path="framework.components.IBasicListBaseMethods"/>
+    <classEntry path="framework.components.IBasicSparkDGMethod"/>
+    <classEntry path="framework.components.IEApplication"/>
+    <classEntry path="framework.components.IEComponent"/>
+    <classEntry path="framework.components.IEContainer"/>
+    <classEntry path="framework.components.IMainApplication"/>
+    <classEntry path="framework.components.IServicePopulableComponent"/>
+    <classEntry path="framework.components.Login.Application.bussiness.Entities.DTOs.LoginDTO"/>
+    <classEntry path="framework.components.Login.Application.bussiness.Entities.DTOs.LoginResponseDTO"/>
+    <classEntry path="framework.components.Login.Application.bussiness.Entities.IUser"/>
+    <classEntry path="framework.components.Login.Application.bussiness.Entities.User"/>
+    <classEntry path="framework.components.Login.Application.bussiness.commands.LoginCommand"/>
+    <classEntry path="framework.components.Login.Application.bussiness.services.ILoginService"/>
+    <classEntry path="framework.components.Login.Application.bussiness.services.LoginService"/>
+    <classEntry path="framework.components.Login.Application.domain.LoginGlobalModel"/>
+    <classEntry path="framework.components.Login.Application.presentationModel.MainScreenModel"/>
+    <classEntry path="framework.components.Login.Application.view.MainScreen"/>
+    <classEntry path="framework.components.Login.Login"/>
+    <classEntry path="framework.components.Login.LoginConfig"/>
+    <classEntry path="framework.components.Login.data.conf.Messages"/>
+    <classEntry path="framework.components.Login.data.mock.FakeModelXxx"/>
+    <classEntry path="framework.components.MainApplication"/>
+    <classEntry path="framework.components.NonArrowedComboBox"/>
+    <classEntry path="framework.components.events.EAutoPopulableListCompEvent"/>
+    <classEntry path="framework.components.skins.FieldSetSkin"/>
+    <classEntry path="framework.ResourceCleaner"/>
+  </includeClasses>
+  <includeResources>
+    <resourceEntry destPath="framework/components/Login/images/Movistar.PNG" sourcePath="framework/components/Login/images/Movistar.PNG"/>
+    <resourceEntry destPath="framework/components/Login/data/conf/dominios.xml" sourcePath="framework/components/Login/data/conf/dominios.xml"/>
+    <resourceEntry destPath="framework/components/Login/Application/presentationModel/languages/MainScreenModel_ES.xml" sourcePath="framework/components/Login/Application/presentationModel/languages/MainScreenModel_ES.xml"/>
+    <resourceEntry destPath="framework/components/Login/data/conf/services.xml" sourcePath="framework/components/Login/data/conf/services.xml"/>
+    <resourceEntry destPath="framework/fmk-conf.xml" sourcePath="framework/fmk-conf.xml"/>
+    <resourceEntry destPath="framework/components/Login/Application/presentationModel/languages/MainScreenModel_EN.xml" sourcePath="framework/components/Login/Application/presentationModel/languages/MainScreenModel_EN.xml"/>
+    <resourceEntry destPath="framework/components/Login/data/mock/FakeModelXxx" sourcePath="framework/components/Login/data/mock/FakeModelXxx"/>
+  </includeResources>
+  <namespaceManifests/>
+</flexLibProperties>

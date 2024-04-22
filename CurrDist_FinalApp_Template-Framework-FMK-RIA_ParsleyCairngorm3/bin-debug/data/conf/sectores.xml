@@ -1,0 +1,9 @@
+<root>
+<svc-summary action=" select " result="false" error="false" info=""/>
+<qry>
+<item rownum="1" data="1" label="Sector Uno"/>
+<item rownum="2" data="2" label="Sector Dos"/>
+<item rownum="3" data="3" label="Sector Tres"/>
+<item rownum="4" data="4" label="Sector Cuatro"/>
+</qry>
+</root>

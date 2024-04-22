@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<parsley:Objects xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				 xmlns:s="library://ns.adobe.com/flex/spark" 
+				 xmlns:mx="library://ns.adobe.com/flex/mx" 
+				 xmlns:parsley="http://www.spicefactory.org/parsley"
+				 xmlns:Application="Application.*" 
+				 xmlns:local="*" 
+				 xmlns:domain="Modules.ABMArticulos.Application.domain.*" 
+				 xmlns:presentationModel="Modules.ABMArticulos.Application.presentationModel.*" xmlns:domain1="Modules.ABMArticulosModel.Application.domain.*" >
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+		<domain:ABMArticulosModel/>
+		<presentationModel:MainScreenModel/>
+
+		
+		<parsley:DynamicObject type="{EService}" id="ABMArticulosSvc" />  
+		
+		<!-- parsley:DynamicObject type="{ABMArticulosService}" id="ABMArticulosSvc" --> 
+		<!-- PRUEBA_MESSAGE}" -->
+		
+		<parsley:MapCommand type="{ABMArticulosCommand}" selector="{Messages.ABMARTICULOS_CONSULTA_MESSAGE}" /> 
+		<parsley:MapCommand type="{ABMArticulosCommand}" selector="{Messages.ABMARTICULOS_ALTA_MESSAGE}" /> 
+		<parsley:MapCommand type="{ABMArticulosCommand}" selector="{Messages.ABMARTICULOS_DELETE_MESSAGE}" /> 
+		
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import Modules.ABMArticulos.Application.bussiness.commands.ABMArticulosCommand;
+			import Modules.ABMArticulos.data.conf.Messages;
+			import framework.EService;
+		]]>
+	</fx:Script>
+</parsley:Objects>

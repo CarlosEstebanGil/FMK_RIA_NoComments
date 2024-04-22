@@ -1,0 +1,7 @@
+<root>
+<svc-summary action=" select " result="false" error="false" info=""/>
+<qry>
+<item rownum="1" id="1" idgasto="2" gasto="Administracion" importe="100.00"/>
+<item rownum="2" id="2" idgasto="3" gasto="Combustible" importe="50.00"/>
+</qry>
+</root>

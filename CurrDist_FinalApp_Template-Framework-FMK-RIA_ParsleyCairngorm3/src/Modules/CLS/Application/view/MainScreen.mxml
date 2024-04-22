@@ -1,0 +1,182 @@
+<components:EPanel xmlns:fx="http://ns.adobe.com/mxml/2009"
+				   xmlns:s="library://ns.adobe.com/flex/spark"
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   xmlns:parsley="http://www.spicefactory.org/parsley"
+				   xmlns:components="framework.components.*"
+				   backgroundColor="#F3F5B2"  
+				   title="CLS"
+				   width="95%" height="95%" >
+				   <!-- width="864" height="326" -->
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<!-- Si o si parece q es necesario agregar c/ vista a un context sino toma el global aparentemente -->
+		<parsley:Configure />
+</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import Modules.CLS.CLSConfig;
+			import Modules.CLS.Application.bussiness.Entities.DTOs.CLSDTO;
+			import Modules.CLS.Application.presentationModel.MainScreenModel;
+			import Modules.CLS.data.conf.Messages;
+			
+			import application.domain.GlobalModel;
+			import application.domain.PmXXXSubDomainContextModel;
+			
+			import flashx.textLayout.events.SelectionEvent;
+			
+			import framework.components.events.EAutoPopulableListCompEvent;
+			
+			import mx.binding.utils.BindingUtils;
+			import mx.binding.utils.ChangeWatcher;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.DragEvent;
+			import mx.events.ItemClickEvent;
+			import mx.events.MoveEvent;
+			import mx.events.ValidationResultEvent;
+			import mx.logging.LogEventLevel;
+			import mx.managers.IFocusManagerComponent;
+			import mx.utils.OnDemandEventDispatcher;
+			
+			import mx.utils.StringUtil;
+			import spark.components.Grid;
+			import spark.components.gridClasses.GridColumn;
+			import spark.events.GridEvent;
+			import spark.events.GridSelectionEvent; 
+			
+			[Inject]
+			[Bindable]
+			public var msPM:MainScreenModel;
+			
+			[Inject]
+			[Bindable]
+			public var globalModelRef:GlobalModel;
+			
+			private var dgOrganismos:Array = [];
+			
+			private var newContact:int=1;
+			
+			//20141130 private var ctrlAcDatos:ChangeWatcher;
+			
+			override public function initMod(event:Event):void {
+                InicializarDatos();
+				msPM.acDGOrganismos=new ArrayCollection(dgOrganismos);
+				//20141130 ctrlAcDatos = BindingUtils.bindSetter( ControlAccesoDatos, txtAcDatos, "text");
+			}
+			
+			[Init]
+			public function handleInit():void {
+				msPM.addEventListener(EAutoPopulableListCompEvent.UPDATE_SELECTED_VALUE,  updateComboSelectedItem); 
+			}
+
+			/*20141130
+			private function ControlAccesoDatos(arg:*):void {
+				switch (txtAcDatos.text) {
+					case "ACTION_BAJA_CONTACTO_OK":
+					case "ACTUALIZAR_CONTACTO_OK":
+						break;
+				}
+			} */
+			
+            private function FiltrarGrilla(e:Event):void {
+				InicializarFormulario();
+			}
+			
+			private function InicializarFormulario():void {
+				msPM.EsNuevo = false;
+			}
+			
+			private function HabilitarFormDatos(e:Event):void {
+			}
+			
+			private function PrepararFormulario(e:Event):void {
+			}
+			
+			private function ActualizarDatos(e:Event):void {
+				if (ChkDatos()) {
+				}
+			}
+
+			private function ChkDatos():Boolean {
+				return true;
+			}
+
+
+//---------------------------------------------------------------------------------------------------------------
+			/* 20141130 private function LlamarInicializarDatos(e:Event):void {
+				InicializarDatos();
+			}
+			private function InicializarDatos():void {
+				InicializarFormulario();				
+			} */
+			private function InicializarDatos():void {
+				try {
+					InicializarFormulario();				
+					
+					scmbBusqueda.rbtCmb1_label="Selección por Transporte";
+					scmbBusqueda.rbtCmb2_label="Selección por Operación";
+					scmbBusqueda.onSelection=scmbSelectionAction;
+					scmbBusqueda.setearPorDocTransporte();
+					scmbBusqueda.setearPorOperacion();
+					scmbBusqueda.init();
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			//20141130
+			public function scmbSelectionAction():void {
+				try {
+					contCompBusqueda.enabled=false;
+					cont_datosPrincipales.enabled=true;
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<!-- UI .. --> 
+	
+	<!-- components:EButton id="btnCerrar" x="824" y="-25" width="32" label="X" -->
+	<!-- 20141130 
+	 components:ETextInput id="txtAcDatos" x="29" y="12" width="324" text="{msPM.CtrlacDatos}" -->
+	<components:EFieldSet id="contCompBusqueda"  width="561" height="128" x="44" y="36"
+						  cornerRadius="5" gap="2" legend="" paddingLeft="1"
+						  paddingRight="1" borderVisible="false"> <!-- 20141117 x="44" y="56"  -->
+		
+		<components:ESelectableComboBox id="scmbBusqueda"/>
+	</components:EFieldSet>
+	
+	<components:ELinkButton id="lnkGuardar" x="745" y="23" width="95" label="Guardar"/>
+							
+	<components:EFieldSet id="cont_datosPrincipales" x="44" y="170" width="797" height="209"
+						  cornerRadius="5" gap="2" legend="Datos Principales" paddingLeft="1"
+						  paddingRight="1"> <!-- y="200" width="797" height="39" -->
+		
+		<components:EDataGrid x="10" y="20" width="775" height="177" editable="true"
+							  dataProvider="{msPM.acDGOrganismos}">
+			<components:columns>
+				<s:ArrayList>
+					<s:GridColumn dataField="id" headerText="id" visible="false"/>
+					<s:GridColumn dataField="organismo" headerText="Organismo"/>
+					<s:GridColumn dataField="fenvio" headerText="Envio"/>
+					<s:GridColumn dataField="ffirma" headerText="Firma" editable="true"/>
+					<s:GridColumn dataField="fdevol" headerText="Devolucion"/>
+					<s:GridColumn dataField="motivo" headerText="Motivo"/>
+				</s:ArrayList>
+			</components:columns>						
+		</components:EDataGrid>
+</components:EFieldSet>
+	<!-- Validaciones ... -->
+	
+	<fx:Declarations>
+	</fx:Declarations>
+	
+	
+
+
+</components:EPanel>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<parsley:Objects xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				 xmlns:s="library://ns.adobe.com/flex/spark" 
+				 xmlns:mx="library://ns.adobe.com/flex/mx" 
+				 xmlns:parsley="http://www.spicefactory.org/parsley"
+				 xmlns:Application="Application.*" 
+				 xmlns:local="*" 
+				 xmlns:domain="Modules.Porteria.Application.domain.*" 
+				 xmlns:presentationModel="Modules.Porteria.Application.presentationModel.*" xmlns:domain1="Modules.PorteriaModel.Application.domain.*" >
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+		<domain:PorteriaModel/>
+		<presentationModel:MainScreenModel/>
+
+			
+		<parsley:DynamicObject type="{EService}" id="svc" />  
+		
+		<!-- parsley:DynamicObject type="{PorteriaService}" id="PorteriaSvc" --> 
+		<!-- PRUEBA_MESSAGE}" -->
+		
+		<parsley:MapCommand type="{PorteriaABMCommand}" selector="{Messages.PORTERIA_CONSULTA_MESSAGE}" /> 
+		<parsley:MapCommand type="{PorteriaABMCommand}" selector="{Messages.PORTERIA_ALTA_MESSAGE}" /> 
+		<parsley:MapCommand type="{PorteriaABMCommand}" selector="{Messages.PORTERIA_DELETE_MESSAGE}" /> 
+		<parsley:MapCommand type="{PorteriaABMCommand}" selector="{Messages.PORTERIA_MODIF_MESSAGE}" /> 
+		
+		<parsley:MapCommand type="{EspecificStandardCommand1}" selector="{Messages.PORTERIA_EXTRA_STANDARD_STANDALONE_CMD1}"  />
+		<parsley:MapCommand type="{EspecificFileDownloadCommand1}" selector="{Messages.PORTERIA_EXTRA_FILEDOWNLOAD_STANDALONE_CMD1}" />
+
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import Modules.Porteria.Application.bussiness.commands.EspecificFileDownloadCommand1;
+			import Modules.Porteria.Application.bussiness.commands.EspecificStandardCommand1;
+			import Modules.Porteria.Application.bussiness.commands.PorteriaABMCommand;
+			
+			import Modules.Porteria.data.conf.Messages;
+			
+			import framework.EService;
+		]]>
+	</fx:Script>
+</parsley:Objects>

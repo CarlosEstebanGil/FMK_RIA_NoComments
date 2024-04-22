@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<parsley:Objects xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				 xmlns:s="library://ns.adobe.com/flex/spark" 
+				 xmlns:mx="library://ns.adobe.com/flex/mx" 
+				 xmlns:parsley="http://www.spicefactory.org/parsley"
+				 xmlns:Application="Application.*" 
+				 xmlns:local="*" 
+				 xmlns:domain="Modules.ABMPersonas.Application.domain.*" 
+				 xmlns:presentationModel="Modules.ABMPersonas.Application.presentationModel.*" 
+				
+				 >
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+		<domain:ABMPersGlobalModel/>
+		<presentationModel:MainScreenModel/>
+
+		
+		<!--parsley:DynamicObject type="{ABMPersonasService}" id="ABMPersSvc" -->  
+		<!-- parsley:MapCommand type="{ABMPersonasCommand}" selector="{Messages.PERSONAS_DELETE_MESSAGE}" --> <!-- PRUEBA_MESSAGE}" -->
+		
+		<parsley:DynamicObject type="{ABMPersonasService}" id="ABMPersSvc" />  
+		<parsley:MapCommand type="{ABMPersonasCommand}" selector="{Messages.PERSONAS_CONSULTA_MESSAGE}" /> <!-- PRUEBA_MESSAGE}" -->
+		
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import Modules.ABMPersonas.Application.bussiness.commands.ABMPersonasCommand;
+			import Modules.ABMPersonas.Application.bussiness.services.ABMPersonasService;
+			import Modules.ABMPersonas.data.conf.Messages;
+			
+			import framework.EMessage;
+			/*import Modules.Login.Application.bussiness.commands.*;
+			import Modules.Login.Application.bussiness.services.*;
+			import Modules.Login.Application.messages.*;
+			
+			import application.bussiness.commands.LoginResultCommand;*/
+		]]>
+	</fx:Script>
+</parsley:Objects>

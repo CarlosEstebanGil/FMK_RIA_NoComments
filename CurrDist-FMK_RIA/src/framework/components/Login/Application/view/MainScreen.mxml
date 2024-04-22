@@ -1,0 +1,498 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<components:EPanel xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 width="400" 
+		 height="242" 
+		 xmlns:parsley="http://www.spicefactory.org/parsley"
+		 xmlns:components="framework.components.*" 
+		 title="Login" 
+		 backgroundColor="#F3F5B2" 
+		 initialize="createListener(event);" > <!-- 20141001 : la linea de abajo no iba xq ya existe en fmkria epanel como initMod! -->
+		<!-- creationComplete="onCreationComplete(event)" __   20141001 : lo vuelvo a meter x sacar parsley init --> 
+	<!-- creationComplete="onCreationComplete(event)" -->
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<!-- Si o si parece q es necesario agregar c/ vista a un context sino toma el global aparentemente -->
+		<!-- parsley:ContextBuilder config="{Modules.Login.LoginConfig}"  //No habia q meterlo de nuevo. al ser hijo de login main app lo hereda, sino pasa eso de q ejecutaba 2 veces x q generaba 2 listeners etc todo repetido , si no ponia esto ent qdaba atachada a config.mxml -->
+		<!-- 20141001 : saco todo lo de parsley -->
+		<!--parsley:Configure -->
+		
+		<!-- s:TraceTarget includeCategory="true" includeLevel="true" ... -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import framework.Fmk_Constants;
+			import framework.Fmk_Messages;
+			import framework.IMainAppGlobalModel;
+			import framework.components.EComboBox;
+			import framework.components.EDataGrid;
+			import framework.components.Login.Application.bussiness.Entities.DTOs.LoginDTO;
+			import framework.components.Login.Application.domain.LoginGlobalModel;
+			import framework.components.Login.Application.presentationModel.MainScreenModel;
+			import framework.components.Login.LoginConfig;
+			import framework.components.Login.data.conf.Messages;
+			import framework.components.events.EAutoPopulableListCompEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.IFlexDisplayObject;
+			import mx.core.UIComponent;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.logging.LogEventLevel;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.ComboBox;
+			import spark.components.TitleWindow;
+			import spark.events.IndexChangeEvent;
+			
+			
+			
+			//este global model sacarlo mepa q ni lo voy a usar, lo pongo x q x ahora los services se cargan ahi nada mas..
+		
+			/* 20140828 creo q no vá (xq este es un comp del fmk lib , no es parte de la app, ent devuelve data en evt y no
+			accede mediante una ref directa al modelo de la applicacion cliente final del usuario  programador!. 
+			[Inject]
+			[Bindable]
+			public var appGlobalModelRef:GlobalModel; // 
+			*/
+			
+			/* 20141001: saco todo lo de parsley: --------------------------
+			[Inject]
+			[Bindable]
+			public var globalModelRef:LoginGlobalModel; //Login Model
+
+			[Inject]
+			[Bindable]
+			public var msPM:framework.components.Login.Application.presentationModel.MainScreenModel;
+			---------------------------------------------------------------*/
+			/* estaba bn pero lo pongo mas completo idem Login.mxml:
+			[Bindable]		//DEbe recibirlo de login.mxml 		//el EAP toma el language de la mainapp model y debe set explicit al login.
+			public var globalModelRef:LoginGlobalModel;//= new LoginGlobalModel; //el loginglobalmodel ni se usa y el global global
+			*/
+			//20141001 : 
+			[Bindable]	
+			private var _AppGlobalModel:IMainAppGlobalModel; //=new LoginGlobalModel;
+			
+			public function get AppGlobalModel():IMainAppGlobalModel {
+				return _AppGlobalModel;
+			}
+			[Inspectable] //acá inspectable es útil xq login.mxml crea este obj mainscreen (panel) por mxml !!!
+			public function set AppGlobalModel(value:IMainAppGlobalModel):void {
+				_AppGlobalModel = value;
+			} 	
+			//-- --- 
+			
+			[Bindable]	//este si se crea acá xq es el model xa esta ventana.		// solo en mainscreenPMModel xa el language (no acá)
+			public var msPM:framework.components.Login.Application.presentationModel.MainScreenModel=new framework.components.Login.Application.presentationModel.MainScreenModel;
+			//y en el initMod le seteo al model (o mas bien presentation Model) de esta pantalla mainscreen, este obj model creado acá.
+			
+			private function _aceptarClick():void {  
+				try {
+					var loginDTO:LoginDTO = new LoginDTO(txtUserName.text,txtUserPass.text, cmbLanguage.selectedItem.data);
+					msPM.sendLoginRequestMSG(Messages.LOGIN_REQUEST_MESSAGE,loginDTO); //LoginRequestMessag.LOGIN_REQUEST_MESSAGE,loginDTO); //la kte login request msge es solo xa uso interno del modulo q tmb funciona en capas
+					//FUNCIONA! : -> msPM.idDominio=EQuickFinder.NO_SELECTION_VALUE;
+					//cmbDominio.setValue(EQuickFinder.NO_SELECTION_VALUE);  //<- PRUEBA. : NO FUNCA ASÍ, SOLO c/setter de PM y ent eventos!..
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+			public var ttlWndw:spark.components.TitleWindow;
+			private var autoPopuDG:EDataGrid
+			
+			//x ahora lo uso para probar la grilla autopopulable
+			private function _cancelarClick():void {  
+			/*20140828 comento TODO esto
+				try {
+					ttlWndw = new TitleWindow();
+					ttlWndw.title = "Prueba Grilla AutoPopulable";
+					ttlWndw.width = 250;
+					ttlWndw.height = 250;
+					ttlWndw.addEventListener(CloseEvent.CLOSE, ttlWndw_close);
+					
+					ttlWndw.addEventListener(FlexEvent.CREATION_COMPLETE , cargarGrilla);
+					
+					autoPopuDG=new EDataGrid();
+					autoPopuDG.id="dgPru";
+					
+					autoPopuDG.autoComplete=true;
+					autoPopuDG.svcURL=appGlobalModelRef.servicios.dominios;
+					autoPopuDG.width=200;
+					autoPopuDG.height=200;
+					//tableName="personas" idFieldName="id" valueFieldName="nombre"
+					//orderFieldName="nombre" orderType="asc"
+					//onDataLoaded="onCmbDominios_dataLoadedOk_handler"
+					//onDataNOTLoaded="onCmbDominios_dataLoadedError_handler" >
+					
+					ttlWndw.addElement(autoPopuDG);
+					
+					PopUpManager.addPopUp(ttlWndw, this, true);
+					PopUpManager.centerPopUp(ttlWndw);				
+				} 
+				catch(error:Error) {
+					trace (error.message);
+				}
+*/
+			}
+			/*public function cargarGrilla(event:Event):void { 
+				//ttlWndw["dgpru"] as 
+				try {
+					autoPopuDG.populate();
+				} 
+				catch(error:Error)  {
+					trace (error.message);
+				}
+				
+			}*/
+			protected function ttlWndw_close(evt:CloseEvent):void {
+				PopUpManager.removePopUp(evt.currentTarget as IFlexDisplayObject);
+			}
+			
+			//20141001:comento init (parsley meta tag) y lo invoco desde "creationComplte"( en realidad initMod() x fmkria (q es el mismo)!
+			//[Init]
+			public function handleInit():void {
+				try {
+					//20140922 acá no iría! x q no dispongo del global model y permisos. asi q este comp es solo conf x prog api o conf xml etc..
+					// profileManager(this,controls);  //20140922 COPY PASTE (SIEMPRE) esta linea.
+					
+					// -- com:CODIGO usuario (parte variable) : -----------------------------------------------------------
+					btnAccept.enabled=true;
+					//addEventListener(EComboBoxEvent.UPDATE_SELECTED_VALUE,  updateComboSelectedItem); //TODO 20140530 hacer q esto lo haga siempre.. Y AUTO? 
+					
+					//20140717 //addEventListener(LoginResultEvt.LOGIN_RESULT_EVT, loginResultEvtHandlerWrapper);
+					msPM.addEventListener(Messages.LOGIN_DENIED_RESPONSE_MESSAGE, loginResultEvtHandlerWrapper);
+					msPM.addEventListener(Messages.LOGIN_GRANTED_RESPONSE_MESSAGE, loginResultEvtHandlerWrapper);
+					msPM.addEventListener(Messages.LOGIN_FAIL_RESPONSE_MESSAGE, loginResultEvtHandlerWrapper);
+					//msPM.addEventListener(EComboBoxEvent.UPDATE_SELECTED_VALUE,  updateComboSelectedItem); //esto deben respetarlo siempre..
+					msPM.addEventListener(EAutoPopulableListCompEvent.UPDATE_SELECTED_VALUE,  updateComboSelectedItem); //esto deben respetarlo siempre..
+					// -- fin:CODIGO usuario (parte variable) : -----------------------------------------------------------
+					
+					//20141020
+					cmbLanguage.addEventListener("change",  updateLanguage);
+					
+					//20141018 : new : xa safar: seria como un "popuplate() pero a mano.. 
+					this.arrCollLanguages=createArrCollLanguagesForCombo(); //1)creo el arreglo de lenguages
+					cmbLanguage.data=getArrCollLanguagesForCombo();			//2)seteo el arreglo como dataProvider al cmb
+					cmbLanguage.dataProvider=getArrCollLanguagesForCombo(); //3)seteo el arreglo a dat x compat x las duda
+					//y noen mxml xq x ahi el create q ponia en la def de la var todavia no habia sido ejecutado..
+					//ej: data="{getArrCollLanguagesForCombo()}" dataProvider="{getArrCollLanguagesForCombo()} " 
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			
+			}
+			/*public function loginResultEvtHandlerWrapper(evt:Event):void {  //ya está en el fmk y todo auto x reflection (no selectCase)
+				trace("llegó"); 
+				dispatchEvent(evt);
+			}*/
+			
+			/* import resources.events.AlgoEvent;
+			private var dummyEvent: AlgoEvent; */
+			import framework.EFlexEvent;
+		 	
+			public function loginResultEvtHandlerWrapper(evt:EFlexEvent):void {//(evt:Event):void { 
+				//trace("llegó"); 
+				try {
+					var dummyEvent:EFlexEvent =  new EFlexEvent(evt.type); //evt as EFlexEvent;
+					dummyEvent.data=evt.data;
+					dispatchEvent(dummyEvent); //dispatchEvent(evt) //new Event(evt.type)); // dispatchEvent(dummyEvent); //dispa //dispatchEvent(evt); //mx.core.uicomponent.event.. ?? en pmModel es flash.events.EventDispatcher.dispatchEvent !!!
+				} 
+				catch(error:Error)  {
+					throw new Error (error.message);
+				}
+				
+			}
+			
+			public function updateLanguage(evt:spark.events.IndexChangeEvent){ //20141020 EFlexEvent):void {//(evt:Event):void { 
+				//trace("llegó"); 
+				try {
+					setLabelsLanguage(cmbLanguage.selectedItem.data);
+				} 
+				catch(error:Error)  {
+					throw new Error (error.message);
+				}
+				
+			}
+			
+			
+			private function createListener(e:Event):void {
+				//objeto.addEventListener(ClaseEvent.KteEvento, myEventHandlerFunc);
+				//add an event listener in this way is the same to add the handler func to an event property of a component via mxml
+				
+				//new: 20140523 : X ahora comento estas 2 lineas q estaban habilitadas y los seteo como handlers en forma inline.. 
+				/* esto va, pero no se si como cmbDominio. o q source (?) .. poner.. (el q dispara).. el cmb.mxmlel .as ? cual? anda igual?
+				cmbDominio.addEventListener(EComboBoxEvent.DATA_LOADED_OK, onCmbDominios_dataLoadedOk_handler);
+				cmbDominio.addEventListener(EComboBoxEvent.DATA_LOADED_ERROR, onCmbDominios_dataLoadedError_handler);*/
+				
+				//addEventListener(FlexEvent.INITIALIZE, cmbDominios_initialize_handler);
+				//20141018
+				//cmbDominios_initialize_handler();
+				cmbLanguage_initialize_handler();
+			}
+			
+			//TODO: Ver como dejarlo con el arg event y como setearlo inline en la funcPointer y q funque tomando el obj event ??? ..
+			private function onCmbLanguages_dataLoadedOk_handler():void { //(event:Event):void {
+				//..TODO
+				//20140902 -> no funca creo -> msPM.idDominio="4"; //20140827 //"001"; //seteo el item x default
+				//20141018 cambié en todos lados cmbDominio y todo lo q sea c/dominio Por Language.
+				//msPM.idDominio="4"; //EQuickFinder.NO_SELECTION_VALUE; //Funca!, incluso en QF!! -> "4"; //"patagonia";
+				msPM.idLanguage=Fmk_Constants.DEFAULT_LANGUAGE;  //"ES" "4";
+			}
+			private function onCmbLanguages_dataLoadedError_handler():void { //(event:Event):void {
+				//..TODO
+			}
+			
+			private function cmbLanguage_initialize_handler():void { //(event:Event):void {
+				/* pruebilla 20140523
+				cmbDominio.tableName="personas";
+				cmbDominio.idFieldName="nombre"; //id es lo q se muestra, deberia llamarse label y el otro value o data y en jee svc tmb!!
+				cmbDominio.valueFieldName="id"; // es lo q interesa recuperar (deberia llamarse data en todos lados )
+				cmbDominio.orderFieldName="nombre";
+				cmbDominio.orderType="asc"; 
+				cmbDominio.onDataLoaded=onCmbDominios_dataLoadedOk_handler;
+				cmbDominio.onDataNOTLoaded=onCmbDominios_dataLoadedError_handler; // ="onCmbDominios_dataLoadedError_handler()";
+				
+				cmbDominio.populate(cmbDominio.getUrl());
+				*/
+				
+			}
+ 
+			/*	private function _btnABMAceptarClick():void { 
+				var loginDTO:LoginDTO = new LoginDTO(txtUserName.text,txtUserPass.text);
+				msPM.sendLoginRequestMSG(LoginRequestMessage.LOGIN_REQUEST_MESSAGE,loginDTO); 
+			}
+			 */
+			
+			//20141001 : AHORA NECESITO ESTOs models tmb (xa pasarselos al command y al service (httpservice)
+			public var loginGlobalModel:LoginGlobalModel;
+			
+			//20140922
+			// private function onCreationComplete(event:Event):void {
+				public override function initMod(event:Event):void {
+					try {
+						//20141001:
+						msPM.model=this.AppGlobalModel; //el mainscreenmodel lo usaba xero lo injectaba, ahora se pasa explicitamente.
+						//20141001: 							// ( recordar, el mainAppGlobalModel viene desde la app usuaria 
+						handleInit();							//	 pasandose siempre como atributo e/ las clases q lo necesitan usar/acceder)
+						//20141001: OJOOO!!!! : -> !!!!!Este modulo login es un injerto, no es un modelo de como hacer las cosas !!!!!!!!!!!				
+						// Mejor no -> msPM.loadLanguage(); //la invoco explicitamente 
+						msPM.loginGlobalModel=this.loginGlobalModel; 
+						//X AHORA Los combos hay que indicarles explicitmanete la orden .populate en el creationComplete del contenedor del mismo!
+						// Ojo, 
+						//TODO 1-> Hacer q si no le mando parametro ent q tome el url x default! osea q se invoque .populate() o .populate(str)
+						//	osea, en el api definirlo como opcional 
+						
+						//new 20140524 Para no popular explicitamente combo x combo la sig linea es parte de todo container ppal y listo:
+						//com: -- 
+						//cmbDominio.populate(); //(cmbDominio.getUrl()); //En esta instancia ya tiene todos los atributos mxml seteados
+						//new 20140524 NO ME FUNCÓ (ver explicacion en ECombobox.as en function createListener .. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+						//dispatchEvent (new EComboBoxEvent(EComboBoxEvent.POPULATE));//(new Event(framework.Fmk_Messages.ECOMBOBOX_POPULATE)); // <- en initialize ya el ecmbBox pone xa este msge un 
+						// addEventListener xa este msge y si alguien lo lanza ent
+						// ejecuta su handler q ejecuta el populate usando la url
+						// x default. si en el creation complete (esta func) no
+						//VÁLIDO xero comento y pruebo el autoomplete..																	// lanzo este msge ent se pueden popular 1 aa 1 explicita-
+						
+						//cmbLanguage.populate(); //volví x ahora a este mecanismo..			// mente con cmbXxx.populate o en cualquier lado.
+						
+						//pruebas, funcan, pero no corresponden a esta UI:
+						//cmbDominio0.populate();
+						//cmbDominio1.populate();
+						
+						//fin  --
+						//New:20140523 -> IDEA COPADA -> TODO 2-> IMPLEMENTARLA!! : (ent es parte del fmk relanzar el creationComplete o ni eso!
+						//     x q con addEventListener puedo meter + de un handler y ent
+						//  PARA ESTE OBJ mainsCreen para el evt CreationComplete q el comp 
+						// escuche! (como el comp smpre va a estar en un container y todo container
+						// tiene.CreationComplete evt ent con poner en el api (en el comp) 
+						//internamente addEventLister parent.eseEvt tmb se ejecuta ademas de este
+						//handler onCreationComplete de la screen!!!
+						//Opcion 2: acá disparar un evento appPPalCreationComplete, y ent meter un handler xa este tipo de evento
+						//en el componente (o parent.creationComplete si se pudiera generalizar..etc) y entonces ahí ya el comp
+						//sabe q el padre se creó completo, q ya seteó todas los atribs mxml y ahi ent en su handler se AUTO-CARGA x http!!!!!
+						
+						//20140912 
+						//20140902 Funca pero lo comento x q quiero q diga "-- seleccionar --"  (opción default):
+						//cmbDominio.noSelectionLabel="-- Nuevo --"
+						
+						//20141018 : HAY Q INVOCAR A ESTA FUNC EXPLICITAMENTE Y ACÁ EN EL INIT()
+						//msPM.loadLanguage(); -> NEW: PERO NO DENTRO DEL FRAMEWORK! en la swc se hace asi:
+						
+						//20141018 TODO  ! : -> MODULARIZAR ESTO : 
+						cmbLanguage.setValue(msPM.getCurrLangStrCode()); //EComboBox.NO_SELECTION_VALUE);
+						
+						setLabelsLanguage(msPM.getCurrLangStrCode());
+						
+						/*if ( msPM.getCurrLangStrCode() == Fmk_Constants.SPANISH_LANGUAGE ) { 
+							msPM.loadLanguage_framework(msPM.xmlLangModelSpanish);
+							cmbLanguage.noSelectionLabel="-- Seleccione Idioma --"; //TODO meter estos tengos en el msPM !
+						}else if ( msPM.getCurrLangStrCode() == Fmk_Constants.ENGLISH_LANGUAGE ) {
+							msPM.loadLanguage_framework(msPM.xmlLangModelEnglish);
+							cmbLanguage.noSelectionLabel="-- Select language --"  // ( BINDEADO ) !!
+						}
+						cmbLanguage.setValue(msPM.getCurrLangStrCode()); //EComboBox.NO_SELECTION_VALUE);*/
+					} 
+					catch(error:Error)  {
+						throw new Error(error.message);
+					}
+
+						
+			}
+			
+			//20141020:
+			private function setLabelsLanguage(currLangStrCode:String){
+				try {
+					if ( currLangStrCode == Fmk_Constants.SPANISH_LANGUAGE ) { 
+						msPM.loadLanguage_framework(msPM.xmlLangModelSpanish);
+						cmbLanguage.noSelectionLabel="-- Seleccione Idioma --"; //TODO meter estos tengos en el msPM !
+					}else if ( currLangStrCode == Fmk_Constants.ENGLISH_LANGUAGE ) {
+						msPM.loadLanguage_framework(msPM.xmlLangModelEnglish);
+						cmbLanguage.noSelectionLabel="-- Select language --"  // ( BINDEADO ) !!
+					}
+					//cmbLanguage.setValue(currLangStrCode); //EComboBox.NO_SELECTION_VALUE);
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+			}
+			
+			//20141018 : solucion temporal: mejor lo meto en el init()( y lo bindeo a un getter xa obtener el mismo)
+			internal var arrCollLanguages:ArrayCollection=createArrCollLanguagesForCombo();//lo creo 1 unica vez
+			[Bindable]
+			protected function getArrCollLanguagesForCombo():ArrayCollection {
+				var r:ArrayCollection = null;
+				try {
+					if ( this.arrCollLanguages != null ) {
+						r=this.arrCollLanguages;
+					}
+					else {
+						r=null;
+						throw new Error("Error al obtener la definicion de lenguages disponibles xa el sistema. in Login.mainscreen.getArrCollLanguagesForCombo function");
+					}
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}finally {
+					return r;
+				}
+			}
+			
+			private function createArrCollLanguagesForCombo():ArrayCollection { //createArrCollLanguagesForCombo():ArrayCollection { //(event:Event):void {
+				var r:ArrayCollection = null;
+				try {
+					var elem1:Object=new Object();
+					elem1.label = Fmk_Constants.SPANISH_LANGUAGE_DESCRIPTION; //20141020 SPANISH_LANGUAGE;
+					elem1.data = Fmk_Constants.SPANISH_LANGUAGE;
+					
+					var elem2:Object=new Object();
+					elem2.label = Fmk_Constants.ENGLISH_LANGUAGE_DESCRIPTION; //20141020 ENGLISH_LANGUAGE;
+					elem2.data = Fmk_Constants.ENGLISH_LANGUAGE;
+					
+					var arr:Array = [elem1, elem2];
+					
+					r=  new ArrayCollection(arr);
+					
+					return r;
+				} 
+				catch(error:Error)  {
+					throw new Error(error.message);
+				}
+				finally {
+					return r;
+				}
+			
+			}
+			
+			//prueba btnCerrar 20141030 :
+			protected override function addBtnCerrar():void{};
+		]]>
+	</fx:Script>
+	
+
+	<!-- fx:Binding source="txtUserName.text" destination="{msPM.userName}" twoWay="true" 	
+	<fx:Binding source="txtUserPass.text" destination="{msPM.userPass}" twoWay="true" -->
+	
+	<!-- components:ELogo width="398" height="63" horizontalCenter="0" verticalCenter="-105" -->
+	
+	<components:EFieldSet legend="{msPM.legendFieldSet}" x="27" y="11" width="345" 
+						  height="186" maxWidth="300" cornerRadius="5"
+						  gap="2"   paddingLeft="1" paddingRight="1" >
+		
+		<!-- components:ECanvas x="-124" y="-122" width="430" height="272" -->
+			<components:ELabel x="66" y="22" width="47" height="18" text="{msPM.lblUserName}" /><!-- text="usuario:" -->
+			<components:ELabel x="45" y="59" width="68" height="18" text="{msPM.lblUserPass}"/>
+			<components:ETextInput id="txtUserName" x="120" y="19" width="178" text="{msPM.userName}" /> <!-- 20141018 text=""  --> <!-- text="{cmbLanguage.isValueSelected()}" --> <!-- isValueSelected()}" --> <!--  text="{cmbDominio.valueSelected}" twoWay="true" -->
+			<components:ETextInput id="txtUserPass" x="119" y="56" width="178" text="{msPM.userPass}" height="22" displayAsPassword="true"/> <!-- text="{msPM.userPass}" twoWay="true"-->
+			
+			<components:ELabel id="lblcmbLanguage" x="60" y="97" width="53" height="19"
+							   text="{msPM.lblcmbLanguage}" /> <!-- text="{msPM.userName}" twoWay="true" -->
+			
+			<!-- 20140827 : prueba cláusula where: -->
+			<!-- components:EComboBox id="cmbDominio" x="117" y="93" width="179" height="23"  svcURL="{appGlobalModelRef.servicios.dominios}" --> 
+				
+				<!-- 20141018 components:EQuickFinder ADEMÁS CAMBIO sacarlo de la DB por cargarlo de un xml local 
+					 x ahora creo una collection con esos 2 strings como datasource.  	--> 
+				<!-- OJO!: No tiene ni svcUrl ni la data xa armar fielName, labelFieldName etc PERO .. COMO NO 
+							invoco POPULATE() ent no pasa nada. SI NO FUNCA CREAR UNA TABLA EN DB Y A LA MIERDA.. -->
+		<!-- data="{getArrCollLanguagesForCombo()}" dataProvider="{getArrCollLanguagesForCombo()} " -->		
+
+		<components:EComboBox   textAlign="center"
+								  id="cmbLanguage" x="117" y="93" width="179" height="23" 								  
+								    > <!--hostURL="localhost"--> <!-- 20141002 hostUrl! -->
+								  <!-- FUNCA XERO NO LO NECESITO ACÁ! -  sqlWhereFilter=" id &lt; 3 " --> <!-- noSelectionLabel="  Nuevo " -->
+				</components:EComboBox>								  
+		<!-- 20141018 components:EComboBox FUNCIONA! XERO X AHORA NO CARGO ESO DESDE DB... 
+		id="cmbLanguage" x="117" y="93" width="179" height="23" 								  
+		tableName="dominios" idFieldName="desc" valueFieldName="id"
+		orderFieldName="desc" orderType="asc"
+		onDataLoaded="onCmbLanguages_dataLoadedOk_handler"
+		onDataNOTLoaded="onCmbLanguages_dataLoadedError_handler" / --> <!--hostURL="localhost"--> <!-- 20141002 hostUrl! -->
+		<!-- FUNCA XERO NO LO NECESITO ACÁ! -  sqlWhereFilter=" id &lt; 3 " --> <!-- noSelectionLabel="  Nuevo " -->
+		
+		
+		<!-- autoComplete="true"
+		svcURL="{appGlobalModelRef.servicios.clientes}" //Funca --> 
+		
+		<!-- () ??--> <!-- text="{msPM.userPass}" twoWay="true"-->
+			
+			<components:EButton id="btnCancel" x="214" y="141" width="82" label="Cancel" click="_cancelarClick()"/>
+			<components:EButton id="btnAccept" x="117" y="141" width="89" label="Accept"
+								click="_aceptarClick()" enabled="false"/>
+		<!-- components:EDateField x="165" y="-12" width="184" id="dateFieldPrueba" hostURL="localhost" -->
+		<!--components:ETextInput id="txtDateFieldTSValue" x="6" y="0" width="174" height="23"
+							   text="{dateFieldPrueba.getFormattedTimeStamp(dateFieldPrueba.selectedDate)}"-->
+		<!-- components:ELabel id="lblCmbDominios0" x="68" y="89" width="53" height="19"
+						   text="Dominio:"-->
+		
+		<!-- el sig code de cmbos y qf funciona, pero era prueba, no corresponde a esta UI, pero funciona! 
+		 components:EComboBoxEditable id="cmbDominio0" x="134" y="85" width="179" height="23"  svcURL="{appGlobalModelRef.servicios.dominios}"  
+							  tableName="personas" idFieldName="id" valueFieldName="nombre"
+							  orderFieldName="nombre" orderType="asc"
+							  onDataLoaded="onCmbDominios_dataLoadedOk_handler"
+							  onDataNOTLoaded="onCmbDominios_dataLoadedError_handler" 
+			components:EComboBoxEditable
+		components:ELabel id="lblCmbDominios1" x="68" y="116" width="53" height="19"
+						   text="Dominio:"
+		components:EQuickFinder id="cmbDominio1" x="134" y="112" width="179" height="23"  svcURL="{appGlobalModelRef.servicios.dominios}"  
+							  tableName="personas" idFieldName="id" valueFieldName="nombre"
+							  orderFieldName="nombre" orderType="asc"
+							  onDataLoaded="onCmbDominios_dataLoadedOk_handler"
+							  onDataNOTLoaded="onCmbDominios_dataLoadedError_handler"
+							  skinClass="framework.components.NonArrowedComboBox"  
+		 components:EQuickFinder  SI QUIERO CON ARROW no le pongo esto y listo 
+			 text="{String(globalModelRef.servicios.root.login)}"  text="{globalModelRef.servicios.toString()}" 
+		-->
+		
+		<!-- components:ECanvas -->
+		
+	</components:EFieldSet>
+	
+
+	<!-- validators section: -->
+	
+	
+</components:EPanel>

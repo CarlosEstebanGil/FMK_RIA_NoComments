@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<parsley:Objects xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				 xmlns:s="library://ns.adobe.com/flex/spark" 
+				 xmlns:mx="library://ns.adobe.com/flex/mx" 
+				 xmlns:parsley="http://www.spicefactory.org/parsley"
+				 xmlns:Application="Application.*" 
+				 xmlns:local="*" 
+				 xmlns:domain="Modules.Djai_Salida.Application.domain.*" 
+				 xmlns:presentationModel="Modules.Djai_Salida.Application.presentationModel.*" xmlns:domain1="Modules.Djai_SalidaModel.Application.domain.*" >
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+		<domain:Djai_SalidaModel/>
+		<presentationModel:MainScreenModel/>
+
+			
+		<parsley:DynamicObject type="{EService}" id="Djai_SalidaSvc" />  
+		<parsley:DynamicObject type="{EService}" id="svcDownloadExcel" />
+		
+		<!-- parsley:DynamicObject type="{Djai_SalidaService}" id="Djai_SalidaSvc" --> 
+		<!-- PRUEBA_MESSAGE}" -->
+		
+		<parsley:MapCommand type="{Djai_SalidaCommand}" selector="{Messages.DJAI_SALIDA_CONSULTA_MESSAGE}" /> 
+		<parsley:MapCommand type="{Djai_SalidaCommand}" selector="{Messages.DJAI_SALIDA_ALTA_MESSAGE}" /> 
+		<parsley:MapCommand type="{Djai_SalidaCommand}" selector="{Messages.DJAI_SALIDA_DELETE_MESSAGE}" /> 
+		<parsley:MapCommand type="{Djai_SalidaCommand}" selector="{Messages.DJAI_SALIDA_MODIF_MESSAGE}" /> 
+
+		<parsley:MapCommand type="{EspecificFileDownloadCommand1}" selector="{Messages.DOWNLOAD_EXCEL}" />
+
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import Modules.Djai_Salida.Application.bussiness.commands.Djai_SalidaCommand;
+			import Modules.Djai_Salida.Application.bussiness.commands.EspecificFileDownloadCommand1;
+			import Modules.Djai_Salida.data.conf.Messages;
+			
+			import framework.EService;
+		]]>
+	</fx:Script>
+</parsley:Objects>

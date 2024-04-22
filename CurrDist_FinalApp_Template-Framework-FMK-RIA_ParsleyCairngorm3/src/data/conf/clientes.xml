@@ -1,0 +1,9 @@
+<root>
+<svc-summary action=" select " result="false" error="false" info=""/>
+<qry>
+<item rownum="1" data="001" label="cliente-1"/>
+<item rownum="2" data="002" label="cliente-2"/>
+<item rownum="3" data="003" label="cliente-3"/>
+<item rownum="4" data="004" label="cliente-4"/>
+</qry>
+</root>

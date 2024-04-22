@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas  
+		   width="100%"
+		   xmlns:fx="http://ns.adobe.com/mxml/2009"  
+		   xmlns:s="library://ns.adobe.com/flex/spark" 
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   creationComplete="onCreationComplete(event)"
+		   implements="framework.components.IEComponent"
+> 															<!-- creationComplete="currentState='Pause'" -->
+
+	<fx:Script>
+		<![CDATA[
+/*			
+			private var _imgURI:String="c:\Movistar.PNG"; //"images/Movistar.PNG" //""; //x ahora lo mando hhardcodeado 
+			
+//			public function get imgURI():String {
+//				return _imgURI;
+//			}
+//
+//			public function set imgURI(value:String):void {
+//				_imgURI = value;
+//			}
+			 
+			private function onCreationComplete(event:Event):void {
+				currentState='Pause';
+				imgLogo.source= _imgURI; //si esto funca ent sacar la asignacion del tag mxml y dejar solo esta..
+			}
+*/			
+			//prueba 2 ( lo anterior era una prueba 1 ) 
+			private var timer:Timer;
+			
+			private function onCreationComplete(event:Event):void {
+				//currentState='Pause';
+				//imgLogo.source= _imgURI; //si esto funca ent sacar la asignacion del tag mxml y dejar solo esta..
+			}
+			
+			private function creationCompleteHandler():void
+			{
+				timer = new Timer( 500 );
+				timer.addEventListener( TimerEvent.TIMER, timerHandler );
+				timer.start();
+			}
+			
+			private function timerHandler( e:TimerEvent ):void
+			{
+				if( vs.selectedIndex == vs.getChildren().length - 1 )
+					vs.selectedIndex = 0;
+				else
+					vs.selectedIndex++;
+			}
+			
+			//20140922
+			
+			//import mx.collections.ArrayCollection;
+			//sep x comas, xa q pueda setearse en modo diseño.. //ArrayCollection=new ArrayCollection;
+			
+			private var _compPermsArrCollStr:String="";
+			
+			public function get compPermsArrCollStr():String {
+				return _compPermsArrCollStr;
+			}
+			[Inspectable]
+			public function set compPermsArrCollStr(strPermsDelimitedByCommasParam:String):void {
+				this._compPermsArrCollStr=strPermsDelimitedByCommasParam;
+			}
+			
+			//x ahora solo va a tener un solo perm, luego, hacer una func q me splitee x commas, me diga cuantos hay, me dé cada uno. etc
+			//y contemplar eso en la func recursiva en EPanel (la q controla los permisos en si)!! (x ahora como es 1 solo lo tomo y listo)
+			
+		]]>
+	</fx:Script>	
+	
+	<!-- prueba1 mx:states>
+		<mx:State name="Pause" 
+		 mx:State name="Dimmed" basedOn="Pause" 
+			< ! - - mx:SetProperty target="{imgLogo}" name="alpha" value="0.0" - - >
+		 /mx:State 
+	 /mx:states -->
+<fx:Declarations>
+	<mx:Fade id="fadeIn"  alphaFrom="0" alphaTo="1" duration="200" effectEnd="timer.start();"/>
+	<mx:Fade id="fadeOut" alphaFrom="1" alphaTo="0" duration="200" effectEnd="timer.stop();"/>
+	
+</fx:Declarations>	
+
+	
+	<!-- prueba 1 mx:transitions >
+		<mx:Transition fromState='' toState='Pause'>
+			<mx:Resize target="{this}" duration="3000" effectEnd="currentState='Dimmed'"/ 
+		 /mx:Transition  
+		 mx:Transition fromState='Pause' toState='Dimmed'  
+			 mx:AnimateProperty target="{imgLogo}" property="alpha" fromValue="1" toValue="0.0" duration="1000"
+								effectEnd="parent.removeChild(this)" 
+		 mx:Transition 
+	 mx:transitions -->
+	
+	<mx:ViewStack id="vs">
+		<mx:Canvas showEffect="fadeIn" hideEffect="fadeOut">
+			<mx:Image source="c:\Vaccari-scr1.png" />
+		</mx:Canvas>
+		<mx:Canvas showEffect="fadeIn" hideEffect="fadeOut">
+			<mx:Image source="Vaccari-scr2.png" />
+		</mx:Canvas>
+		<mx:Canvas showEffect="fadeIn" hideEffect="fadeOut">
+			<mx:Image source="Vaccari-scr3.png" />
+		</mx:Canvas>
+	</mx:ViewStack>
+	
+	<!-- prueba 1 mx:Image id="imgLogo" 
+			  autoLoad="true"
+			  visible="true" 
+			  horizontalCenter="0" 
+			  source="{_imgURI}" 
+			  verticalCenter="0"
+			  visible.Dimmed="true"
+			  width.Pause="568" 
+			  height.Pause="90" 
+			  horizontalCenter.Pause="0"
+			  verticalCenter.Pause="0"
+	 --> 									<!--   visible="false" -->
+	
+	<!-- mx:Image source="images/Movistar.PNG" horizontalCenter="0" verticalCenter="0" id="imgLogo" -->
+	
+</mx:Canvas>
